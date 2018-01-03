@@ -1,0 +1,101 @@
+# The persistent storage to be used by the nfs-server-pod
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nfs-provisioned-pvc
+  labels:
+    function: nfs-storage
+  annotations:
+    storageClassName: ""
+spec:
+  accessModes:
+    - "ReadWriteOnce"
+  resources:
+    requests:
+      storage: {{ .Values.nfsServer.storage | quote }}
+---
+# The nfs-server-rc that ensures a nfs-server-pod is running
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: nfs-server-rc
+spec:
+  replicas: 1
+  selector:
+    component: nfs-server
+  template:
+    metadata:
+      labels:
+        component: nfs-server
+    spec:
+      containers:
+      - name: nfs-server-container
+        image: k8s.gcr.io/volume-nfs:0.8
+        ports:
+          - name: nfs
+            containerPort: 2049
+          - name: mountd
+            containerPort: 20048
+          - name: rpcbind
+            containerPort: 111
+        securityContext:
+          privileged: true
+        resources:
+{{ toYaml .Values.nfsServer.resources | indent 10}}
+        volumeMounts:
+          - mountPath: /exports
+            name: nfs-volume
+      volumes:
+        - name: nfs-volume
+          persistentVolumeClaim:
+            claimName: nfs-provisioned-pvc
+---
+# The nfs-server service
+kind: Service
+apiVersion: v1
+metadata:
+  name: nfs-server-svc
+spec:
+  ports:
+    - name: nfs
+      port: 2049
+    - name: mountd
+      port: 20048
+    - name: rpcbind
+      port: 111
+  selector:
+    component: nfs-server
+---
+# The nfs-server's user's pv
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nfs-pv
+  labels:
+    type: nfs
+spec:
+  capacity:
+    storage: {{ .Values.nfsServer.storage | quote }}
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: "nfs-server-svc.{{ .Release.Namespace }}.svc.cluster.local"
+    path: "/"
+---
+# The nfs-server's user's pvc
+# TODO: This is quite specific for the use case... Perhaps i should isolate this?
+# - It could be relevant to have within the authenticator's pre_spawn_start hook.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nfs-pvc
+spec:
+  selector:
+    matchLabels:
+      type: nfs
+  accessModes:
+    - ReadWriteMany
+  storageClassName: ""
+  resources:
+    requests:
+      storage: {{ .Values.nfsServer.storage | quote }}

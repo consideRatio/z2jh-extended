@@ -1,0 +1,16 @@
+# The repository field is the full URL to the chart repository.
+# Note that you must also use helm repo add to add that repo locally.
+# ---
+# Starting from 2.2.0, repository can be defined as the path to the directory of
+# the dependency charts stored locally. The path should start with a prefix of
+# "file://". For example,
+
+# dependencies:
+# - name: nginx
+#   version: "1.2.3"
+#   repository: "file://../dependency_chart/nginx"
+
+dependencies:
+  - name: jupyterhub
+    repository: file://../z2jh/jupyterhub
+    version: "v0.6.0"

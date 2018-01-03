@@ -1,0 +1,4 @@
+# Encrypts sensitive files using git-crypt
+# - Guide: https://blogs.s-osg.org/introduction-gpg-encryption-git-crypt/
+# - Repo:  https://github.com/AGWA/git-crypt
+z2jh-extended/secret-values.yaml filter=git-crypt diff=git-crypt

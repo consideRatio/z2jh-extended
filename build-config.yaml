@@ -1,0 +1,14 @@
+charts:
+  - name: z2jh-extended
+    # TODO: decide if eu.gcr.io or k8s.gcr.io should be used.
+    imagePrefix: eu.gcr.io/jupyter-se/
+
+    images:
+      hub:
+        valuesPath: jupyterhub.hub.image
+        buildArgs:
+          JUPYTERHUB_VERSION: 0.8.1
+      singleuser:
+        valuesPath: jupyterhub.singleuser.image
+        buildArgs:
+          JUPYTERHUB_VERSION: 0.8.1
