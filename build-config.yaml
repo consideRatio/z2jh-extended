@@ -12,3 +12,7 @@ charts:
         valuesPath: jupyterhub.singleuser.image
         buildArgs:
           JUPYTERHUB_VERSION: 0.8.1
+      nfs-server:
+        valuesPath: nfsServer.image
+        buildArgs:
+          JUPYTERHUB_VERSION: 0.8.1

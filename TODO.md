@@ -4,13 +4,14 @@
 - DONE: Load balancer auto ok
 - DONE: streamline initial cluster setup
 - DONE: Test that hub.extra-config.py is working
-- DONE: Git update / rebase this repo again and incorperate this PR
-  - DONE: https://github.com/jupyterhub/zero-to-jupyterhub-k8s/pull/314
+- DONE: Git update / rebase this repo again
+- DONE: Incorperate this PR
+        https://github.com/jupyterhub/zero-to-jupyterhub-k8s/pull/314
 - DONE: Learn how to read logs from my config files
   - DONE: Reformulated: learn why and when, and if one can avoid clearing logs.
   - DONE: https://github.com/jupyterhub/zero-to-jupyterhub-k8s/issues/357
 - DONE: Get nbgitpuller up and running...
-  - https://jupyter.se/hub/user-redirect/git-pull?repo=https://github.com/consideratio/jupyter-math&subPath=source/gradient-descent/gradient-descent.ipynb
+        https://jupyter.se/hub/user-redirect/git-pull?repo=https://github.com/consideratio/jupyter-math&subPath=source/gradient-descent/gradient-descent.ipynb
 - DONE: ENV variables for Learnet.se login
 - DONE: Read about controllers (deployments etc)
 - DONE: Read about storage
@@ -28,27 +29,55 @@
 
 - DONE: Remove exposed secret (zro..)
 
-- Add option to build.py to delete active user pods.
+
+# NFS makes me angry...
+- DONE: spawner.start, spawner.lifecyclehook, spawner.cmd, authentication pre_spawn_start
+- DONE: FS_ID READ UP ABOUT the kubespawner fsid thing
+- DONE: Handlings permissions with docker:
+        https://denibertovic.com/posts/handling-permissions-with-docker-volumes/
+- DONE: Entrypoint vs CMD:
+        https://www.ctl.io/developers/blog/post/dockerfile-entrypoint-vs-cmd/
+- DONE: https://github.com/kubernetes/kubernetes/issues/2630
+
+# Permissions makes me angry...
+- learn about setfacl
+- learn about UID, GID
+- learn about chmod, chgrp, chown
+
+# Learning
+- DONE: tini - https://github.com/krallin/tini
+- bash scripts
+  - DONE: http://guide.bash.academy/inception/
+  - DONE: http://guide.bash.academy/commands/
+  - DONE: http://guide.bash.academy/expansions/
+  - http://guide.bash.academy/conditionals
+
+# Build.py
+- Add option to build.py to delete active user pods on deploy
+- Make it look nice with click like yuvipandas berkely-dsep-infra repos
+- Enable it to easily scale up and down
+- Enable it to tear down and set up
 
 - Project refactoring etc.
   - DONE: Secure secrets like this
-    - https://github.com/berkeley-dsep-infra/datahub/blob/staging/.gitattributes
+          https://github.com/berkeley-dsep-infra/datahub/blob/staging/.gitattributes
   - DONE: Consider utilizing gitsubmodules
-    - https://github.com/yuvipanda/paws
+          https://github.com/yuvipanda/paws
   - DONE: Consider utilizing a subchart
     - Example of a "helm subchart"
-    - https://github.com/berkeley-dsep-infra/datahub/
+      https://github.com/berkeley-dsep-infra/datahub/
   - DONE: Learn more about Helm
     - DONE: requirements.yaml function
-    - DONE: Building Helm Charts From the Ground Up: An Introduction to Kubernetes: https://www.youtube.com/watch?v=vQX5nokoqrQ
+    - DONE: Building Helm Charts From the Ground Up: An Introduction to Kubernetes:
+            https://www.youtube.com/watch?v=vQX5nokoqrQ
     - DONE: Read documentation somewhat thoroughly
   - DONE: Learn more from KubeCon playlist...
     - DONE: Watched 20 videos..
-  - Setup the build
+  - DONE: Setup the build
     - DONE: Get the values.yaml functional
     - DONE: Get the nfs.yaml functional
-    - Get the images functional
-    - Get the build.py functional
+    - DONE: Get the images functional
+    - DONE: Get the build.py functional
 
 - DONE: Use values in the template for nfs when it comes to storage etc...
 
@@ -57,10 +86,13 @@
   - SOLVED: When I added a get_config function in the extra config, i got None values...
 
 - Fix permissions on the exchange directory...
-- Setup a custom NFS Dockerfile: 
-  - https://github.com/kubernetes/kubernetes/tree/master/test/images/volumes-tester/nfs
+- DONE: Setup a custom NFS Dockerfile: 
+        https://github.com/kubernetes/kubernetes/tree/master/test/images/volumes-tester/nfs
   - Stuff i want to have it do...
     - setup anonuid / anongid
+    - 
+
+- Update node resource requests to limit on memory instead of CPU?
 
 - Mount the NFS volume by settings in the kubespawner instead of the same setup using extraVolumeMounts...
 - Prepopulate stuff into the NFS dir..

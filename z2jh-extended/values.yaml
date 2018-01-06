@@ -5,6 +5,9 @@
 # https://docs.helm.sh/chart_template_guide/#overriding-values-from-a-parent-chart
 
 nfsServer:
+  image:
+    name: eu.gcr.io/jupyter-se/nfs-server
+    tag: debug-deploy-31
   storage: 10Gi
   resources:
     requests:
@@ -81,6 +84,16 @@ jupyterhub:
               if not auth_state:
                   return
 
+
+              # USER ROLE
+              if str(auth_state['microsoft_user']['jobTitle']) == 'Lärare':
+                edu_role = 'instructor'
+              elif str(auth_state['microsoft_user']['jobTitle']) == 'Elev':
+                edu_role = 'student'
+              else:
+                edu_role = 'unknown'
+
+
               # ENV
               spawner.environment['AUTH_USERNAME'] = str(user.name)
               spawner.environment['AUTH_ACCESS_TOKEN'] = str(auth_state['access_token'])
@@ -95,21 +108,14 @@ jupyterhub:
               spawner.environment['AUTH_JOB_TITLE'] = str(auth_state['microsoft_user']['jobTitle'])
               spawner.environment['AUTH_OFFICE_LOCATION'] = str(auth_state['microsoft_user']['officeLocation'])
               spawner.environment['AUTH_PREFERRED_LANGUAGE'] = str(auth_state['microsoft_user']['preferredLanguage'])
-
-              # Decide what type of user this is
-              if str(auth_state['microsoft_user']['jobTitle']) == 'Lärare':
-                edu_role = 'instructor'
-              elif str(auth_state['microsoft_user']['jobTitle']) == 'Elev':
-                edu_role = 'student'
-              else:
-                edu_role = 'unknown'
-
               spawner.environment['EDU_ROLE'] = edu_role
+
 
               # LABELS
               # c.KubeSpawner.singleuser_extra_labels = get_config('singleuser.extra-labels', {})
               spawner.singleuser_extra_labels['edu-role'] = edu_role
               spawner.user_storage_extra_labels['edu-role'] = edu_role
+
 
               # ANNOTATIONS
               # - School info?
@@ -117,24 +123,48 @@ jupyterhub:
 
 
               # HOOKS
+              # These hooks can run before, during or after the docker image entrypoint
               # https://github.com/jupyterhub/kubespawner/blob/master/kubespawner/spawner.py#L613
-              spawner.singleuser_lifecycle_hooks = {
-                'postStart': {
-                  'exec': {
-                    'command': ['/bin/sh', '-c', 'echo Hello Im $(whoami) from the postStart handler > /home/jovyan/message']
-                  }
-                }
-              }
+              # spawner.singleuser_lifecycle_hooks = {
+              #   'postStart': {
+              #     'exec': {
+              #       'command': ['/bin/sh', '-c', 'echo Hello Im $(whoami) from the postStart handler > /home/jovyan/message']
+              #     }
+              #   }
+              # }
 
-              # USER / GROUP
-              # c.KubeSpawner.singleuser_uid = get_config('singleuser.uid')
-              # c.KubeSpawner.singleuser_fs_gid = get_config('singleuser.fs-gid')
+
+              # ENTRYPOINT (kubernetes terminology: command)
+              # Kubespawner does not allow you to change this.
+              # The jupyter/docker-stacks images default entrypoint is...
+              # ENTRYPOINT ["tini", "--"]
+              # https://github.com/jupyter/docker-stacks
+              # 
+              # Read more of why you want tini at...
+              # https://github.com/krallin/tini/issues/8
+
+              # CMD (kubernetes terminology: args)
+              spawner.cmd = ['start-notebook.sh']
+
+
+              # IDEA: Set this to None and allow the dockerfile entrypoint
+              #       solve some permissions details first!
+
               # TODO: figre out if setting these differently based on the user
               # could eliminate the need to create multiple images.
               # - https://github.com/jupyterhub/kubespawner/issues/18#issuecomment-272633065
-              # NOTE:
-              # - I can only setup permissions for pre-created folders, right? Or is regexp permissions possible?
-              
+
+              # TODO: Switch user from script? Perhaps no need...
+              # exec ... https://unix.stackexchange.com/a/163896/257111
+
+
+              # USER / GROUP
+              # EXPLANATION: This UID overrides the Dockerfiles USER value
+              c.KubeSpawner.singleuser_uid = 1000
+              # EXPLANATION: This GID is set to own the mounted volumes
+              c.KubeSpawner.singleuser_fs_gid = 1000
+
+
               # IMAGE
               # c.KubeSpawner.singleuser_image_spec = os.environ['SINGLEUSER_IMAGE']              
               # TODO: figure out how to set this properly
@@ -154,6 +184,12 @@ jupyterhub:
               #   - name: volume-nbgrader
               #     mountPath: /srv/nbgrader/exchange
               #     subPath: ''
+
+
+              # - extra_container_config:
+              #   Extra configuration (e.g. envFrom) for notebook container which is not covered by parameters above.
+              # - extra_pod_config:
+              #   Extra configuration (e.g. tolerations) for pod which is not covered by parameters above.
 
 
       c.JupyterHub.authenticator_class = LearnetAuthenticator
@@ -177,7 +213,7 @@ jupyterhub:
     # image WRITTEN by ../build.py
     image:
       name: eu.gcr.io/jupyter-se/hub
-      tag: 0cb1fe5
+      tag: debug-deploy-31
     resources:
       requests:
         cpu: 0.2
@@ -268,7 +304,9 @@ jupyterhub:
     lifecycleHooks:
     initContainers:
     nodeSelector: {}
+    # uid is adjusted by custom authenticators pre_spawn_start hook
     uid: 1000
+    # fsGid is adjusted by the custom authenticators pre_spawn_start hook
     fsGid: 1000
     storage:
       type: dynamic
@@ -293,7 +331,7 @@ jupyterhub:
     # image WRITTEN by ../build.py
     image:
       name: eu.gcr.io/jupyter-se/singleuser
-      tag: 0cb1fe5
+      tag: debug-deploy-31
     startTimeout: 300
     cpu:
       limit:

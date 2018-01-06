@@ -4,7 +4,7 @@ kind: PersistentVolumeClaim
 metadata:
   name: nfs-provisioned-pvc
   labels:
-    function: nfs-storage
+    component: nfs-storage
   annotations:
     storageClassName: ""
 spec:
@@ -14,23 +14,31 @@ spec:
     requests:
       storage: {{ .Values.nfsServer.storage | quote }}
 ---
-# The nfs-server-rc that ensures a nfs-server-pod is running
-apiVersion: v1
-kind: ReplicationController
+apiVersion: extensions/v1beta1
+kind: Deployment
 metadata:
-  name: nfs-server-rc
+  name: nfs-server-deploy
 spec:
   replicas: 1
+  strategy:
+    rollingUpdate:
+      # Required! The pod attached to PVC must die before a new pod can run.
+      maxUnavailable: 1
   selector:
-    component: nfs-server
+    matchLabels:
+      component: nfs-server
   template:
     metadata:
       labels:
+        name: nfs-server
+        app: jupyterhub
         component: nfs-server
+        release: {{ .Release.Name }}
+        heritage: {{ .Release.Service }}
     spec:
       containers:
       - name: nfs-server-container
-        image: k8s.gcr.io/volume-nfs:0.8
+        image: {{ .Values.nfsServer.image.name }}:{{ .Values.nfsServer.image.tag }}
         ports:
           - name: nfs
             containerPort: 2049
@@ -44,9 +52,9 @@ spec:
 {{ toYaml .Values.nfsServer.resources | indent 10}}
         volumeMounts:
           - mountPath: /exports
-            name: nfs-volume
+            name: nfs-claimed-volume
       volumes:
-        - name: nfs-volume
+        - name: nfs-claimed-volume
           persistentVolumeClaim:
             claimName: nfs-provisioned-pvc
 ---
@@ -82,7 +90,12 @@ spec:
     server: "nfs-server-svc.{{ .Release.Namespace }}.svc.cluster.local"
     path: "/"
 ---
-# The nfs-server's user's pvc
+# The nfs-seas the existing host entry, though I am not sure we ensure a host direct exists before using hostDir
+# Part of the problem here is that different containers can run as
+# different users in the same pod - which user do we create the volume
+# with? what we really need is a way to tell docker to add supplemental
+# group IDs when launching a container, so we can assign all containers
+# in a pod to a common group.rver's user's pvc
 # TODO: This is quite specific for the use case... Perhaps i should isolate this?
 # - It could be relevant to have within the authenticator's pre_spawn_start hook.
 apiVersion: v1
