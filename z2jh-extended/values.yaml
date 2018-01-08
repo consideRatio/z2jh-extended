@@ -5,9 +5,10 @@
 # https://docs.helm.sh/chart_template_guide/#overriding-values-from-a-parent-chart
 
 nfsServer:
+  enabled: false
   image:
     name: eu.gcr.io/jupyter-se/nfs-server
-    tag: debug-deploy-31
+    tag: itg-conf-attempt-21
   storage: 10Gi
   resources:
     requests:
@@ -72,6 +73,8 @@ jupyterhub:
           except FileNotFoundError:
               return default
       # -----------------------------------------------------------------------
+
+      # Other
 
       # Auth
       from oauthenticator.microsoft import MicrosoftOAuthenticator
@@ -144,7 +147,7 @@ jupyterhub:
               # https://github.com/krallin/tini/issues/8
 
               # CMD (kubernetes terminology: args)
-              spawner.cmd = ['start-notebook.sh']
+              # spawner.cmd = ['start-notebook.sh']
 
 
               # IDEA: Set this to None and allow the dockerfile entrypoint
@@ -160,9 +163,9 @@ jupyterhub:
 
               # USER / GROUP
               # EXPLANATION: This UID overrides the Dockerfiles USER value
-              c.KubeSpawner.singleuser_uid = 1000
+              spawner.singleuser_uid = 1000
               # EXPLANATION: This GID is set to own the mounted volumes
-              c.KubeSpawner.singleuser_fs_gid = 1000
+              spawner.singleuser_fs_gid = 1000
 
 
               # IMAGE
@@ -170,21 +173,26 @@ jupyterhub:
               # TODO: figure out how to set this properly
 
               # VOLUME / MOUNT
-              # TODO: I know i need to do this in the end to setup different volumes for my user...
+              # WARNING: Adjusting these will lead to consequenses for future pods it hink
               # c.KubeSpawner.volumes.extend(get_config('singleuser.storage.extra-volumes', []))
-              # TODO (later): figure out how to set this properly, it is currently setting it as...
-              # extraVolumes: ### MODIFIED
-              # - name: volume-nbgrader
-              #   persistentVolumeClaim:
-              #     claimName: nfs-pvc
+              # spawner.volumes = spawner.volumes.extend([
+              #   {
+              #     'name': 'volume-nbgrader',
+              #     'persistentVolumeClaim': {
+              #       'claimName': 'nfs-pvc'
+              #     }
+              #   }
+              # ])
 
               # c.KubeSpawner.volume_mounts.extend(get_config('singleuser.storage.extra-volume-mounts', []))
-              # TODO (later): figure out how to set this properly, it is currently setting it as...
-              # extraVolumeMounts: ### MODIFIED
-              #   - name: volume-nbgrader
-              #     mountPath: /srv/nbgrader/exchange
-              #     subPath: ''
-
+              # spawner.volumeMounts = spawner.volumeMounts.extend([
+              #   {
+              #     'name': 'volume-nbgrader',
+              #     'mountPath': '/srv/nbgrader/exchange',
+              #     'subPath': None
+              #   }
+              # ])
+              
 
               # - extra_container_config:
               #   Extra configuration (e.g. envFrom) for notebook container which is not covered by parameters above.
@@ -200,7 +208,7 @@ jupyterhub:
       c.MicrosoftOAuthenticator.hosted_domain = get_config('custom.hosted-domain')
       c.MicrosoftOAuthenticator.login_service = get_config('custom.login-service')
       email_domain = get_config('custom.hosted-domain')
-    ### extraConfigMap OVERRIDDEN in secret-values.yaml
+    ### extraConfigMap auth details ADDED TO in secret-values.yaml
     extraConfigMap:
       client-id: ''
       client-secret: ''
@@ -213,7 +221,7 @@ jupyterhub:
     # image WRITTEN by ../build.py
     image:
       name: eu.gcr.io/jupyter-se/hub
-      tag: debug-deploy-31
+      tag: itg-conf-attempt-21
     resources:
       requests:
         cpu: 0.2
@@ -310,16 +318,25 @@ jupyterhub:
     fsGid: 1000
     storage:
       type: dynamic
+      ### extraVolumes is adjusted by custom authenticators pre_spawn_start hook
+      # extraVolumes: []
+      ### extraVolumeMounts is adjusted by custom authenticators pre_spawn_start hook
+      # extraVolumeMounts: []
       ### extraVolumes MODIFIED
       extraVolumes:
-        - name: volume-nbgrader
-          persistentVolumeClaim:
-            claimName: nfs-pvc
+        # - name: get-started
+        #   gitRepo:
+        #     repository: https://github.com/consideRatio/jupyter-se-get-started.git
+        # - name: nbgrader
+        #   persistentVolumeClaim:
+        #     claimName: nfs-pvc
       ### extraVolumeMounts MODIFIED
       extraVolumeMounts:
-        - name: volume-nbgrader
-          mountPath: /srv/nbgrader/exchange
-          # subPath: ''
+        # - name: get-started
+        #   mountPath: /home/jovyan/get-started
+        #   subPath: jupyter-se-get-started
+        # - name: nbgrader
+        #   mountPath: /srv/nbgrader/exchange
       static:
         pvcName:
         subPath: '{username}'
@@ -331,7 +348,7 @@ jupyterhub:
     # image WRITTEN by ../build.py
     image:
       name: eu.gcr.io/jupyter-se/singleuser
-      tag: debug-deploy-31
+      tag: itg-conf-attempt-21
     startTimeout: 300
     cpu:
       limit:
@@ -341,7 +358,7 @@ jupyterhub:
       limit:
       ### guarantee MODIFIED from 1G
       guarantee: 1G
-    cmd: jupyterhub-singleuser
+    cmd: start
 
   prePuller:
     enabled: true

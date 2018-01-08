@@ -1,3 +1,4 @@
+{{ if .Values.nfsServer.enabled -}}
 # The persistent storage to be used by the nfs-server-pod
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -112,3 +113,4 @@ spec:
   resources:
     requests:
       storage: {{ .Values.nfsServer.storage | quote }}
+{{- end }}

@@ -1,3 +1,6 @@
+# A FUTILE ATTEMPT SO FAR... Probably notgoing down the NFS path until i relly
+# really need to...
+
 # anongid: 1000
 # anonuid: 1000
 # export_path: /export/pool0/homes

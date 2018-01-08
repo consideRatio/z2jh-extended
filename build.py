@@ -62,7 +62,7 @@ def build_images(prefix, images, tag=None, commit_range=None, push=False):
             tag = last_commit
         image_name = prefix + name
         image_spec = '{}:{}'.format(image_name, tag)
-        value_modifications[options['valuesPath']] = {
+        value_modifications[options['imageValuesPath']] = {
             'name': image_name,
             'tag': tag
         }

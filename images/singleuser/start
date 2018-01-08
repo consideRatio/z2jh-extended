@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+pre-startup-bash "$@"
+pre-startup-python "$@"
+exec jupyterhub-singleuser "$@"

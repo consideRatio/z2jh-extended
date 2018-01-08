@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+curl "https://raw.githubusercontent.com/consideRatio/jupyter-se-getting-started/master/getting-started.ipynb" \
+    > "/home/jovyan/click me and get started.ipynb"

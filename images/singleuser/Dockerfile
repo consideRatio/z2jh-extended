@@ -5,8 +5,15 @@ FROM jupyter/minimal-notebook:0b3ec811c968
 #               https://github.com/jupyter/docker-stacks/blob/master/base-notebook/Dockerfile
 # Built from... Ubuntu 16.04
 
-# conda/pip/apt install additional packages here, if desired.
+# kubespawner requires the singleuser image to be started with a script
+# provided by the jupyterhub package, and will hence override the CMD with 
+# ["jupyterhub-singleuser"] instead of the jupyter/docker-stacks images CMD
+# of ["start-notebook.sh"]
+ARG JUPYTERHUB_VERSION=0.8.*
+RUN pip install --no-cache jupyterhub==$JUPYTERHUB_VERSION
 
+
+# conda/pip/apt install additional packages here, if desired.
 RUN conda install -y -c conda-forge -c damianavila82 \
     ipyvolume \
     ipywidgets \
@@ -22,11 +29,10 @@ RUN pip --no-cache-dir install \
 
 RUN jupyter serverextension enable --py nbgitpuller --sys-prefix
 
+USER root
 
 # --- FUTILE ATTEMPT TO SETUP NFS MOUNT ---
 # -----------------------------------------------------------------------------
-USER root
-
 # So we can actually write the NSF mount
 ENV NBGRADER_EXCHANGE_DIR=/srv/nbgrader/exchange
 
@@ -48,12 +54,14 @@ RUN NBDIR=/srv/nbgrader/newdir && \
     mkdir "$NBDIR" && \
     chown :100 "$NBDIR" && \
     chmod g+rws "$NBDIR"
-
-USER $NB_USER
 # -----------------------------------------------------------------------------
 
+COPY start /usr/local/bin
+COPY pre-startup-bash /usr/local/bin
+COPY pre-startup-python /usr/local/bin
+RUN chmod o+rx \
+    /usr/local/bin/start \
+    /usr/local/bin/pre-startup-bash \
+    /usr/local/bin/pre-startup-python
 
-# pin jupyterhub to match the Hub version
-# set via --build-arg in Makefile
-ARG JUPYTERHUB_VERSION=0.8
-RUN pip install --no-cache jupyterhub==$JUPYTERHUB_VERSION
+USER $NB_USER

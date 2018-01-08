@@ -25,8 +25,6 @@
 - DONE: Learn about inter-cluster DNS
 - DONE: add hide_code https://github.com/kirbs-/hide_code
 - DONE: Update secrets
-
-
 - DONE: Remove exposed secret (zro..)
 
 
@@ -44,13 +42,21 @@
 - learn about UID, GID
 - learn about chmod, chgrp, chown
 
-# Learning
-- DONE: tini - https://github.com/krallin/tini
-- bash scripts
+# Big learning
+- DONE: docker
+- DONE: kubernetes
+- DONE: jupyterhub
+  - DONE: kubespawner
+  - DONE: nbgrader, nbgitpuller
+- DONE: bash scripts
   - DONE: http://guide.bash.academy/inception/
   - DONE: http://guide.bash.academy/commands/
   - DONE: http://guide.bash.academy/expansions/
-  - http://guide.bash.academy/conditionals
+  - DONE: http://guide.bash.academy/conditionals
+
+# Small learning
+- DONE: git-crypt
+- DONE: tini - https://github.com/krallin/tini
 
 # Build.py
 - Add option to build.py to delete active user pods on deploy
@@ -91,6 +97,15 @@
   - Stuff i want to have it do...
     - setup anonuid / anongid
     - 
+
+- get prepuller under control on z2jh-extended (be able to invoke it)
+- DONE: get a git-repo volume setup
+- DONE: get a startup script hook setup
+
+- Get rid of the "groups: cannot find name for group ID 1000" warning
+- Set the username to be specific for nbgraders sake
+- Setup a "getting started" persistent readonly directory that can link to nbgitpuller links.
+-
 
 - Update node resource requests to limit on memory instead of CPU?
 

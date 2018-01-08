@@ -53,7 +53,7 @@ gcloud container clusters resize $CLUSTER_NAME --size 0
 ## Scale up
 #### NOTE: Helm upgrade > runs pre-puller > ensures new nodes gets images
 #### gcloud container clusters list
-gcloud container clusters resize $CLUSTER_NAME --size 3
+gcloud container clusters resize $CLUSTER_NAME --size 1 --quiet
 helm upgrade $HELM_RELEASE \
     --wait \
     --install \

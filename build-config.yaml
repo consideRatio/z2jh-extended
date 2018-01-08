@@ -5,14 +5,12 @@ charts:
 
     images:
       hub:
-        valuesPath: jupyterhub.hub.image
+        imageValuesPath: jupyterhub.hub.image
         buildArgs:
           JUPYTERHUB_VERSION: 0.8.1
       singleuser:
-        valuesPath: jupyterhub.singleuser.image
+        imageValuesPath: jupyterhub.singleuser.image
         buildArgs:
           JUPYTERHUB_VERSION: 0.8.1
       nfs-server:
-        valuesPath: nfsServer.image
-        buildArgs:
-          JUPYTERHUB_VERSION: 0.8.1
+        imageValuesPath: nfsServer.image

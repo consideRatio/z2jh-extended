@@ -1,0 +1,3 @@
+[submodule "z2jh"]
+	path = z2jh
+	url = git@github.com:jupyterhub/zero-to-jupyterhub-k8s.git
