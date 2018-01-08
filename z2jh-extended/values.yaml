@@ -8,7 +8,7 @@ nfsServer:
   enabled: false
   image:
     name: eu.gcr.io/jupyter-se/nfs-server
-    tag: itg-conf-attempt-21
+    tag: 9c0fdaf
   storage: 10Gi
   resources:
     requests:
@@ -221,7 +221,7 @@ jupyterhub:
     # image WRITTEN by ../build.py
     image:
       name: eu.gcr.io/jupyter-se/hub
-      tag: itg-conf-attempt-21
+      tag: 9c0fdaf
     resources:
       requests:
         cpu: 0.2
@@ -319,19 +319,17 @@ jupyterhub:
     storage:
       type: dynamic
       ### extraVolumes is adjusted by custom authenticators pre_spawn_start hook
-      # extraVolumes: []
-      ### extraVolumeMounts is adjusted by custom authenticators pre_spawn_start hook
-      # extraVolumeMounts: []
       ### extraVolumes MODIFIED
-      extraVolumes:
+      extraVolumes: []
         # - name: get-started
         #   gitRepo:
         #     repository: https://github.com/consideRatio/jupyter-se-get-started.git
         # - name: nbgrader
         #   persistentVolumeClaim:
         #     claimName: nfs-pvc
+      ### extraVolumeMounts is adjusted by custom authenticators pre_spawn_start hook
       ### extraVolumeMounts MODIFIED
-      extraVolumeMounts:
+      extraVolumeMounts: []
         # - name: get-started
         #   mountPath: /home/jovyan/get-started
         #   subPath: jupyter-se-get-started
@@ -348,7 +346,7 @@ jupyterhub:
     # image WRITTEN by ../build.py
     image:
       name: eu.gcr.io/jupyter-se/singleuser
-      tag: itg-conf-attempt-21
+      tag: 9c0fdaf
     startTimeout: 300
     cpu:
       limit:
