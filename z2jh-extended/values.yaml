@@ -8,7 +8,7 @@ nfsServer:
   enabled: false
   image:
     name: eu.gcr.io/jupyter-se/nfs-server
-    tag: 9c0fdaf
+    tag: itg-conf-1
   storage: 10Gi
   resources:
     requests:
@@ -221,7 +221,7 @@ jupyterhub:
     # image WRITTEN by ../build.py
     image:
       name: eu.gcr.io/jupyter-se/hub
-      tag: 9c0fdaf
+      tag: itg-conf-1
     resources:
       requests:
         cpu: 0.2
@@ -346,7 +346,7 @@ jupyterhub:
     # image WRITTEN by ../build.py
     image:
       name: eu.gcr.io/jupyter-se/singleuser
-      tag: 9c0fdaf
+      tag: itg-conf-1
     startTimeout: 300
     cpu:
       limit:
