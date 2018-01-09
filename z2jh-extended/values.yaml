@@ -8,7 +8,7 @@ nfsServer:
   enabled: false
   image:
     name: eu.gcr.io/jupyter-se/nfs-server
-    tag: itg-conf-1
+    tag: nti3
   storage: 10Gi
   resources:
     requests:
@@ -163,9 +163,9 @@ jupyterhub:
 
               # USER / GROUP
               # EXPLANATION: This UID overrides the Dockerfiles USER value
-              spawner.singleuser_uid = 1000
+              # spawner.singleuser_uid = 1000
               # EXPLANATION: This GID is set to own the mounted volumes
-              spawner.singleuser_fs_gid = 1000
+              # spawner.singleuser_fs_gid = 1000
 
 
               # IMAGE
@@ -221,7 +221,7 @@ jupyterhub:
     # image WRITTEN by ../build.py
     image:
       name: eu.gcr.io/jupyter-se/hub
-      tag: itg-conf-1
+      tag: nti3
     resources:
       requests:
         cpu: 0.2
@@ -321,20 +321,20 @@ jupyterhub:
       ### extraVolumes is adjusted by custom authenticators pre_spawn_start hook
       ### extraVolumes MODIFIED
       extraVolumes: []
-        # - name: get-started
-        #   gitRepo:
-        #     repository: https://github.com/consideRatio/jupyter-se-get-started.git
-        # - name: nbgrader
-        #   persistentVolumeClaim:
-        #     claimName: nfs-pvc
+      # - name: get-started
+      #   gitRepo:
+      #     repository: https://github.com/consideRatio/jupyter-se-get-started.git
+      # - name: nbgrader
+      #   persistentVolumeClaim:
+      #     claimName: nfs-pvc
       ### extraVolumeMounts is adjusted by custom authenticators pre_spawn_start hook
       ### extraVolumeMounts MODIFIED
       extraVolumeMounts: []
-        # - name: get-started
-        #   mountPath: /home/jovyan/get-started
-        #   subPath: jupyter-se-get-started
-        # - name: nbgrader
-        #   mountPath: /srv/nbgrader/exchange
+      # - name: get-started
+      #   mountPath: /home/jovyan/get-started
+      #   subPath: jupyter-se-get-started
+      # - name: nbgrader
+      #   mountPath: /srv/nbgrader/exchange
       static:
         pvcName:
         subPath: '{username}'
@@ -346,14 +346,14 @@ jupyterhub:
     # image WRITTEN by ../build.py
     image:
       name: eu.gcr.io/jupyter-se/singleuser
-      tag: itg-conf-1
+      tag: nti3
     startTimeout: 300
     cpu:
-      limit:
+      limit: 2
       ### guarantee MODIFIED from
       guarantee: 0.5
     memory:
-      limit:
+      limit: 1G
       ### guarantee MODIFIED from 1G
       guarantee: 1G
     cmd: start

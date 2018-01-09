@@ -2,7 +2,6 @@ charts:
   - name: z2jh-extended
     # TODO: decide if eu.gcr.io or k8s.gcr.io should be used.
     imagePrefix: eu.gcr.io/jupyter-se/
-
     images:
       hub:
         imageValuesPath: jupyterhub.hub.image
@@ -14,3 +13,4 @@ charts:
           JUPYTERHUB_VERSION: 0.8.1
       nfs-server:
         imageValuesPath: nfsServer.image
+
