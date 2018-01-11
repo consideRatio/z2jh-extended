@@ -98,16 +98,29 @@
     - setup anonuid / anongid
     - 
 
-- get prepuller under control on z2jh-extended (be able to invoke it)
+- get prepuller job under control on z2jh-extended (be able to invoke it)
 - DONE: get a git-repo volume setup
 - DONE: get a startup script hook setup
 
+# Introduction for teachers
+- Allow guest login
+- Make a 5 min video
+
+# Usage docs
+- pip install --user <packagename>
+- conda install -p ~/.local <packagename>
+
+# autoscaling
+- cluster autoscaler + affinity
+- 
+
 - Get rid of the "groups: cannot find name for group ID 1000" warning
 - Set the username to be specific for nbgraders sake
-- Setup a "getting started" persistent readonly directory that can link to nbgitpuller links.
+- DONE: Setup a "getting started" persistent readonly directory that can link to nbgitpuller links.
+  - DONE: use a k8s git-volume mount and its done, it will have require root to change.
 -
 
-- Update node resource requests to limit on memory instead of CPU?
+- DONE: Update node resource requests to limit on memory instead of CPU?
 
 - Mount the NFS volume by settings in the kubespawner instead of the same setup using extraVolumeMounts...
 - Prepopulate stuff into the NFS dir..

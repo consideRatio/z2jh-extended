@@ -164,7 +164,8 @@ jupyter serverextension disable --sys-prefix nbgrader.server_extensions.formgrad
 
 
 
-
+# Inspect node utilization
+kubectl describe nodes
 
 
 
