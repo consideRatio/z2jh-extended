@@ -8,7 +8,7 @@ nfsServer:
   enabled: false
   image:
     name: eu.gcr.io/jupyter-se/nfs-server
-    tag: nti3
+    tag: 9c0fdaf
   storage: 10Gi
   resources:
     requests:
@@ -221,7 +221,7 @@ jupyterhub:
     # image WRITTEN by ../build.py
     image:
       name: eu.gcr.io/jupyter-se/hub
-      tag: nti3
+      tag: 9c0fdaf
     resources:
       requests:
         cpu: 0.2
@@ -346,14 +346,14 @@ jupyterhub:
     # image WRITTEN by ../build.py
     image:
       name: eu.gcr.io/jupyter-se/singleuser
-      tag: nti3
+      tag: 9c0fdaf
     startTimeout: 300
     cpu:
       limit: 2
       ### guarantee MODIFIED from
       ### Allows for 6 users on 1 n1-standard-4 google machine
       ### Allows for 8 additional users for every n1-standard-4 google machine
-      guarantee: 450m
+      guarantee: 0.450
     memory:
       limit: 1G
       ### guarantee MODIFIED from 1G
