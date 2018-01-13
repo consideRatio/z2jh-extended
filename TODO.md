@@ -1,3 +1,26 @@
+# Big day TODO
+- WAITING...: Allow scaling up to 25 nodes
+- Activity backend
+  - (essential) User submission of progress responded by progress made
+  - (fancy) Dashboard
+- Create notebooks
+  - BASIC: Python programming certificate
+  - MATH: Gradient descent lab
+  - PHYSICS: Electric fields
+
+# Big day pre-launch
+- Scale up to 25 nodes
+- Make sure the nodes have the images prepulled
+
+
+
+
+
+
+
+
+
+
 #TODO
 - DONE: Git update / Rebase this repo
 - DONE: enabled nbgitpuller serverextension without installing overhead things
@@ -125,7 +148,12 @@
 - Mount the NFS volume by settings in the kubespawner instead of the same setup using extraVolumeMounts...
 - Prepopulate stuff into the NFS dir..
 
-- Learn and document how to view the resource usage on my nodes.
+- DONE: Learn and document how to view the resource usage on my nodes.
+  - DONE: kubectl describe nodes
+
+- DONE: Try scaling usage for 32 students
+- DONE: Try scaling usage for 200 students
+  - DONE: Request higher CPU and "in-use-address" quotas on googles cloud console.
 
 - Setup NBGrader
   - Setup NbGrader based on ... one single directory with ReadWriteMany
@@ -172,3 +200,17 @@
   - Implement helm chart best practices:
     - https://gist.github.com/so0k/f927a4b60003cedd101a0911757c605a
 - Run a script to update jupyter.se to point to the cloud ip?
+
+
+# Advanced refinements
+- secure-access-to-helm
+  https://zero-to-jupyterhub.readthedocs.io/en/v0.5-doc/security.html#secure-access-to-helm
+- audit-cloud-metadata-server-security
+  https://zero-to-jupyterhub.readthedocs.io/en/v0.5-doc/security.html#audit-cloud-metadata-server-security
+- delete-the-kubernetes-dashboard
+  https://zero-to-jupyterhub.readthedocs.io/en/v0.5-doc/security.html#delete-the-kubernetes-dashboard
+
+- Update the extraConfig values to be a dict
+  https://github.com/jupyterhub/zero-to-jupyterhub-k8s/pull/398
+- Utilize get_config in extraConfig without duplicating code
+  https://github.com/jupyterhub/zero-to-jupyterhub-k8s/pull/397

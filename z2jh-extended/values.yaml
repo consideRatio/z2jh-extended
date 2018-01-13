@@ -4,6 +4,29 @@
 # Helm documentation regarding overriding a subcharts values
 # https://docs.helm.sh/chart_template_guide/#overriding-values-from-a-parent-chart
 
+# Internal JupyterHub service
+# http://jupyterhub.readthedocs.io/en/latest/reference/services.html
+# RELATED:
+#   school_assistant.py in the extended hub image
+#   values.yaml: 
+#     schoolAssistant
+#     jupyterhub.hub.extraConfig
+#     jupyterhub.hub.extraConfigMap
+schoolAssistant:
+  # NOTE: needs to be set in the extraConfigMap as well
+  enabled: true
+
+# External service instead?
+# schoolAssistant:
+#   image:
+#     name: eu.gcr.io/jupyter-se/school-assistant
+#     tag: dev02
+#   storage: 1Gi
+#   resources:
+#     requests:
+#       cpu: 0.1
+#       memory: 100Mi
+
 nfsServer:
   enabled: false
   image:
@@ -72,6 +95,39 @@ jupyterhub:
                   return f.read().strip()
           except FileNotFoundError:
               return default
+      # -----------------------------------------------------------------------
+
+      # school-assistant hub internal service
+      # http://jupyterhub.readthedocs.io/en/latest/reference/services.html
+      # -----------------------------------------------------------------------
+      if get_config('custom.school-assistant.enabled', False):
+        raise "wtf"
+        print(os.environ["HUB_SERVICE_HOST"])
+
+        c.JupyterHub.services.append({
+            'name': 'whoami',
+            'url': 'http://127.0.0.1:8090',
+            'command': ['flask', 'run', '--port=8090'],
+            'environment': {
+                'FLASK_APP': '/usr/local/bin/whaaaoami.py',
+            }
+        })
+        # c.JupyterHub.services.append({
+        #     'name': 'whoami-oauth',
+        #     'url': 'http://127.0.0.1:10201',
+        #     'command': ['flask', 'run', '--port=10201'],
+        #     'environment': {
+        #         'FLASK_APP': '/usr/local/bin/whoami-oauth.py',
+        #     }
+        # })
+        # c.JupyterHub.services.append({
+        #     'name': 'school',
+        #     'admin': True,
+        #     'command': school_assistant_cmd,
+        #     # environment: dict - additional environment variables for the Service.
+        #     # user: str - name of the user to run the server if different from the Hub. Requires Hub to be root.
+        #     # cwd: path directory in which to run the Service, if different from the Hub directory.
+        # })
       # -----------------------------------------------------------------------
 
       # Other
@@ -189,7 +245,7 @@ jupyterhub:
               #   {
               #     'name': 'volume-nbgrader',
               #     'mountPath': '/srv/nbgrader/exchange',
-              #     'subPath': None
+              #     'suschoolAssistantbPath': None
               #   }
               # ])
               
@@ -209,19 +265,21 @@ jupyterhub:
       c.MicrosoftOAuthenticator.login_service = get_config('custom.login-service')
       email_domain = get_config('custom.hosted-domain')
     ### extraConfigMap auth details ADDED TO in secret-values.yaml
+    # client-id: ''
+    # client-secret: ''
+    # callback-url: ''
+    # hosted-domain: ''
+    # login-service: ''
     extraConfigMap:
-      client-id: ''
-      client-secret: ''
-      callback-url: ''
-      hosted-domain: ''
-      login-service: ''
+      school-assistant.enabled: true
+
     ### extraEnv OVERRIDDEN in secret-values.yaml
     extraEnv: {}
     extraContainers: []
     # image WRITTEN by ../build.py
     image:
       name: eu.gcr.io/jupyter-se/hub
-      tag: 9c0fdaf
+      tag: dev14
     resources:
       requests:
         cpu: 0.2
@@ -346,7 +404,7 @@ jupyterhub:
     # image WRITTEN by ../build.py
     image:
       name: eu.gcr.io/jupyter-se/singleuser
-      tag: 9c0fdaf
+      tag: dev14
     startTimeout: 300
     cpu:
       limit: 2
@@ -376,7 +434,7 @@ jupyterhub:
     enabled: true
     users: false
     ### timeout MODIFIED from 3600
-    timeout: 900
+    timeout: 3600
     ### every MODIFIED from 600
-    every: 150
+    every: 600
 

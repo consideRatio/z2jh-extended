@@ -11,6 +11,7 @@ charts:
         imageValuesPath: jupyterhub.singleuser.image
         buildArgs:
           JUPYTERHUB_VERSION: 0.8.1
-      nfs-server:
-        imageValuesPath: nfsServer.image
-
+      # nfs-server:
+      #   imageValuesPath: nfsServer.image
+      # school-assistant:
+      #   imageValuesPath: schoolAssistant.image

@@ -1,0 +1,70 @@
+# DISABLED with the leading underscore
+# I currently figure an external hub service is overkill
+
+{{ if .Values.schoolAssistant.enabled -}}
+# The persistent storage to be used by the school-assistant-pod
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: school-assistant-provisioned-pvc
+  labels:
+    component: school-assistant-storage
+  annotations:
+    storageClassName: ""
+spec:
+  accessModes:
+    - "ReadWriteOnce"
+  resources:
+    requests:
+      storage: {{ .Values.schoolAssistant.storage | quote }}
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: school-assistant-deploy
+spec:
+  replicas: 1
+  strategy:
+    rollingUpdate:
+      # Required! The pod attached to PVC must die before a new pod can run.
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      component: school-assistant
+  template:
+    metadata:
+      labels:
+        name: school-assistant
+        app: jupyterhub
+        component: school-assistant
+        release: {{ .Release.Name }}
+        heritage: {{ .Release.Service }}
+    spec:
+      containers:
+      - name: school-assistant-container
+        image: {{ .Values.schoolAssistant.image.name }}:{{ .Values.schoolAssistant.image.tag }}
+        ports:
+          - name: http
+            containerPort: 80
+        resources:
+{{ toYaml .Values.schoolAssistant.resources | indent 10}}
+        volumeMounts:
+          - mountPath: /data
+            name: school-assistant-claimed-volume
+      volumes:
+        - name: school-assistant-claimed-volume
+          persistentVolumeClaim:
+            claimName: school-assistant-provisioned-pvc
+---
+# The school-assistant service
+kind: Service
+apiVersion: v1
+metadata:
+  name: school-assistant-svc
+spec:
+  ports:
+    - name: http
+      port: 80
+  selector:
+    component: school-assistant
+{{- end }}
