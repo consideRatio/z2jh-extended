@@ -64,8 +64,4 @@ RUN chmod o+rx \
     /usr/local/bin/pre-startup-bash \
     /usr/local/bin/pre-startup-python
 
-# TEMP: Bugfixfor jupyterhub until 0.8.2 is released
-RUN pip --no-cache-dir install \
-    git+https://github.com/consideratio/jupyterhub
-
 USER $NB_USER

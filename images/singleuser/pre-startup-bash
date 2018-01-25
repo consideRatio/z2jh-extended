@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
 
-wget -q \
-    "https://raw.githubusercontent.com/consideRatio/jupyter-se-getting-started/master/getting-started.ipynb" \
-    -O "/home/jovyan/getting-started.ipynb"
+# wget -q \
+#     "https://raw.githubusercontent.com/consideRatio/jupyter-se-getting-started/master/getting-started.ipynb" \
+#     -O "/home/jovyan/getting-started.ipynb"

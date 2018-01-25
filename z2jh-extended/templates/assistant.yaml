@@ -1,0 +1,89 @@
+# DISABLED with the leading underscore
+# I currently figure an external hub service is overkill
+
+{{ if .Values.assistant.enabled -}}
+# The persistent storage to be used by the assistant-pod
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: assistant-provisioned-pvc
+  labels:
+    component: assistant-storage
+  annotations:
+    storageClassName: ""
+spec:
+  accessModes:
+    - "ReadWriteOnce"
+  resources:
+    requests:
+      storage: {{ .Values.assistant.storage | quote }}
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: assistant-deploy
+spec:
+  replicas: 1
+  strategy:
+    rollingUpdate:
+      # Required! The pod attached to PVC must die before a new pod can run.
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      component: assistant
+  template:
+    metadata:
+      labels:
+        name: assistant
+        app: jupyterhub
+        component: assistant
+        release: {{ .Release.Name }}
+        heritage: {{ .Release.Service }}
+    spec:
+      containers:
+      - name: assistant-container
+        image: {{ .Values.assistant.image.name }}:{{ .Values.assistant.image.tag }}
+        env:
+          - name: JUPYTERHUB_SERVICE_NAME
+            value: assistant
+          - name: JUPYTERHUB_API_URL
+            value: http://hub.{{ .Release.Namespace }}.svc.cluster.local:8081/hub/api
+          - name: JUPYTERHUB_BASE_URL
+            value: https://jupyter.se/
+          - name: JUPYTERHUB_SERVICE_PREFIX
+            value: /services/assistant/
+          - name: JUPYTERHUB_API_TOKEN
+            value: {{ .Values.jupyterhub.hub.services.assistant.apiToken }}
+        ports:
+          - name: http
+            containerPort: 80
+          # - name: https
+          #   containerPort: 443
+        resources:
+{{ toYaml .Values.assistant.resources | indent 10}}
+        volumeMounts:
+          - mountPath: /data
+            name: assistant-claimed-volume
+      volumes:
+        - name: assistant-claimed-volume
+          persistentVolumeClaim:
+            claimName: assistant-provisioned-pvc
+---
+# The assistant service
+kind: Service
+apiVersion: v1
+metadata:
+  name: assistant
+spec:
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: 80
+    # - name: https
+    #   port: 443
+    #   protocol: TCP
+    #   targetPort: 443
+  selector:
+    component: assistant
+{{- end }}

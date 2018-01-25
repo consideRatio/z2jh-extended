@@ -1,19 +1,22 @@
 # Big day TODO
-- WAITING...: Allow scaling up to 25 nodes
-- Activity backend
-  - (essential) User submission of progress responded by progress made
+- DONE: Allow scaling up to 25 nodes
+- NOT ALL THE WAY: Activity backend
+  - (essential) User submission of progress responded by IGNORE:progress made
   - (fancy) Dashboard
-- Create notebooks
-  - BASIC: Python programming certificate
-  - MATH: Gradient descent lab
-  - PHYSICS: Electric fields
+- DONE: Create notebooks
+  - DONE: BASIC: Python programming
+  - DONE: INTERMEDIATE: Python programming
+  - DONE: MATH: Gradient descent lab
+  - DONE: EXTRA: Projects...
 
-# Big day pre-launch
+# Pre-launch
 - Scale up to 25 nodes
 - Make sure the nodes have the images prepulled
 
-
-
+# Fixxa
+- DONE: Gradient descent repo
+- DONE: https://github.com/temp-pv/prog.git
+- DONE: https://hangouts.google.com/hangouts/_/itguppsala.se/programdag15januari
 
 
 

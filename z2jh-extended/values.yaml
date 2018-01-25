@@ -7,25 +7,26 @@
 # Internal JupyterHub service
 # http://jupyterhub.readthedocs.io/en/latest/reference/services.html
 # RELATED:
-#   school_assistant.py in the extended hub image
+#   assistant.py in the extended hub image
 #   values.yaml: 
-#     schoolAssistant
+#     assistant
 #     jupyterhub.hub.extraConfig
 #     jupyterhub.hub.extraConfigMap
-schoolAssistant:
-  # NOTE: needs to be set in the extraConfigMap as well
-  enabled: true
+# assistant:
+#   # NOTE: needs to be set in the extraConfigMap as well
+#   enabled: true
 
 # External service instead?
-# schoolAssistant:
-#   image:
-#     name: eu.gcr.io/jupyter-se/school-assistant
-#     tag: dev02
-#   storage: 1Gi
-#   resources:
-#     requests:
-#       cpu: 0.1
-#       memory: 100Mi
+assistant:
+  enabled: false
+  image:
+    name: eu.gcr.io/jupyter-se/assistant
+    tag: bigday04
+  storage: 1Gi
+  resources:
+    requests:
+      cpu: 0.1
+      memory: 100Mi
 
 nfsServer:
   enabled: false
@@ -97,37 +98,39 @@ jupyterhub:
               return default
       # -----------------------------------------------------------------------
 
-      # school-assistant hub internal service
+      # assistant hub EXTERNAL service --- bad idea, go external...
+      # it seems like jupyterhub's ip routing cant handle k8s complexity
       # http://jupyterhub.readthedocs.io/en/latest/reference/services.html
       # -----------------------------------------------------------------------
-      if get_config('custom.school-assistant.enabled', False):
-        raise "wtf"
-        print(os.environ["HUB_SERVICE_HOST"])
+      # import socket
+      # pod_ip = socket.gethostbyname(socket.gethostname())
+      # service_ip = os.environ["HUB_SERVICE_HOST"]
 
-        c.JupyterHub.services.append({
-            'name': 'whoami',
-            'url': 'http://127.0.0.1:8090',
-            'command': ['flask', 'run', '--port=8090'],
-            'environment': {
-                'FLASK_APP': '/usr/local/bin/whaaaoami.py',
-            }
-        })
-        # c.JupyterHub.services.append({
-        #     'name': 'whoami-oauth',
-        #     'url': 'http://127.0.0.1:10201',
-        #     'command': ['flask', 'run', '--port=10201'],
-        #     'environment': {
-        #         'FLASK_APP': '/usr/local/bin/whoami-oauth.py',
-        #     }
-        # })
-        # c.JupyterHub.services.append({
-        #     'name': 'school',
-        #     'admin': True,
-        #     'command': school_assistant_cmd,
-        #     # environment: dict - additional environment variables for the Service.
-        #     # user: str - name of the user to run the server if different from the Hub. Requires Hub to be root.
-        #     # cwd: path directory in which to run the Service, if different from the Hub directory.
-        # })
+      # if get_config('custom.assistant.enabled', False):
+      #   c.JupyterHub.services.append({
+      #       'name': 'assistant',
+      #       'url': 'http://assistant.prod.svc.cluster.local:80'.format(pod_ip),
+      #   })
+      # -----------------------------------------------------------------------
+
+      # assistant hub internal service --- bad idea, go external...
+      # it seems like jupyterhub's ip routing cant handle k8s complexity
+      # http://jupyterhub.readthedocs.io/en/latest/reference/services.html
+      # -----------------------------------------------------------------------
+      # import socket
+      # pod_ip = socket.gethostbyname(socket.gethostname())
+      # service_ip = os.environ["HUB_SERVICE_HOST"]
+
+      # if get_config('custom.assistant.enabled', False):
+      #   c.JupyterHub.services.append({
+      #       'name': 'assistant',
+      #       'admin': True,
+      #       'url': 'http://{}:8090'.format(pod_ip),
+      #       'command': ['flask', 'run', '--port=8090'],
+      #       'environment': {
+      #           'FLASK_APP': '/usr/local/bin/whoami.py',
+      #       }
+      #   })
       # -----------------------------------------------------------------------
 
       # Other
@@ -245,7 +248,7 @@ jupyterhub:
               #   {
               #     'name': 'volume-nbgrader',
               #     'mountPath': '/srv/nbgrader/exchange',
-              #     'suschoolAssistantbPath': None
+              #     'subPath': None
               #   }
               # ])
               
@@ -265,27 +268,35 @@ jupyterhub:
       c.MicrosoftOAuthenticator.login_service = get_config('custom.login-service')
       email_domain = get_config('custom.hosted-domain')
     ### extraConfigMap auth details ADDED TO in secret-values.yaml
-    # client-id: ''
-    # client-secret: ''
-    # callback-url: ''
-    # hosted-domain: ''
-    # login-service: ''
-    extraConfigMap:
-      school-assistant.enabled: true
-
+    # client-id:
+    # client-secret:
+    # callback-url:
+    # hosted-domain:
+    # login-service:
+    extraConfigMap: {}
     ### extraEnv OVERRIDDEN in secret-values.yaml
     extraEnv: {}
     extraContainers: []
+    extraVolumes: []
+    extraVolumeMounts: []
     # image WRITTEN by ../build.py
     image:
       name: eu.gcr.io/jupyter-se/hub
-      tag: dev14
+      tag: bigday04
     resources:
       requests:
         cpu: 0.2
         memory: 512Mi
-    services: {}
+    services:
+      assistant:
+        name: assistant
+        # FIXME: the namespace (prod) is hardcoded!
+        url: http://assistant.prod.svc.cluster.local
+        ### apiToken  OVERRIDDEN in secret-values.yaml
+        apiToken:
     imagePullPolicy: IfNotPresent
+    pdb:
+      enabled: true
 
   rbac:
     enabled: true
@@ -334,6 +345,8 @@ jupyterhub:
       resources: {}
     labels:
     nodeSelector: {}
+    pdb:
+      enabled: true
     https:
       enabled: true
       type: letsencrypt
@@ -365,6 +378,13 @@ jupyterhub:
       cryptoKey:
 
   singleuser:
+    networkTools:
+      image:
+        name: jupyterhub/k8s-network-tools
+        tag: a21cecb
+    cloudMetadata:
+      enabled: false
+      ip: 169.254.169.254
     extraLabels: {}
     extraEnv: {}
     lifecycleHooks:
@@ -378,19 +398,19 @@ jupyterhub:
       type: dynamic
       ### extraVolumes is adjusted by custom authenticators pre_spawn_start hook
       ### extraVolumes MODIFIED
-      extraVolumes: []
-      # - name: get-started
-      #   gitRepo:
-      #     repository: https://github.com/consideRatio/jupyter-se-get-started.git
+      extraVolumes:
+        - name: getting-started
+          gitRepo:
+            repository: https://github.com/consideRatio/jupyter-se-getting-started.git
       # - name: nbgrader
       #   persistentVolumeClaim:
       #     claimName: nfs-pvc
       ### extraVolumeMounts is adjusted by custom authenticators pre_spawn_start hook
       ### extraVolumeMounts MODIFIED
-      extraVolumeMounts: []
-      # - name: get-started
-      #   mountPath: /home/jovyan/get-started
-      #   subPath: jupyter-se-get-started
+      extraVolumeMounts:
+        - name: getting-started
+          mountPath: /home/jovyan/jupyter-se-getting-started
+          subPath: jupyter-se-getting-started
       # - name: nbgrader
       #   mountPath: /srv/nbgrader/exchange
       static:
@@ -404,7 +424,7 @@ jupyterhub:
     # image WRITTEN by ../build.py
     image:
       name: eu.gcr.io/jupyter-se/singleuser
-      tag: dev14
+      tag: bigday04
     startTimeout: 300
     cpu:
       limit: 2
@@ -417,12 +437,21 @@ jupyterhub:
       ### guarantee MODIFIED from 1G
       guarantee: 1G
     cmd: start
+    defaultUrl:
 
   prePuller:
-    enabled: true
-    image:
-      name: yuvipanda/image-allnodes-puller
-      tag: v0.8
+    hook:
+      enabled: true
+      extraEnv: {}
+      image:
+        name: jupyterhub/k8s-pre-puller
+        tag: 2b02899
+    continuous:
+      enabled: true
+    pause:
+      image:
+        name: gcr.io/google_containers/pause
+        tag: "3.0"
 
   ingress:
     enabled: false
