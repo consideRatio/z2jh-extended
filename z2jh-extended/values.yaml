@@ -21,7 +21,7 @@ assistant:
   enabled: false
   image:
     name: eu.gcr.io/jupyter-se/assistant
-    tag: bigday04
+    tag: autoscaling-01
   storage: 1Gi
   resources:
     requests:
@@ -72,30 +72,8 @@ jupyterhub:
       # See https://github.com/jupyterhub/zero-to-jupyterhub-k8s/issues/374
       # -----------------------------------------------------------------------
       import os
-      import yaml
+      import z2jh
 
-      def get_config(key, default=None):
-          """
-          Find a config item of a given name & return it
-
-          Parses everything as YAML, so lists and dicts are available too
-          """
-          path = os.path.join('/etc/jupyterhub/config', key)
-          try:
-              with open(path) as f:
-                  data = yaml.safe_load(f)
-                  return data
-          except FileNotFoundError:
-              return default
-
-      def get_secret(key, default=None):
-          """Get a secret from /etc/jupyterhub/secret"""
-          path = os.path.join('/etc/jupyterhub/secret', key)
-          try:
-              with open(path) as f:
-                  return f.read().strip()
-          except FileNotFoundError:
-              return default
       # -----------------------------------------------------------------------
 
       # assistant hub EXTERNAL service --- bad idea, go external...
@@ -106,7 +84,7 @@ jupyterhub:
       # pod_ip = socket.gethostbyname(socket.gethostname())
       # service_ip = os.environ["HUB_SERVICE_HOST"]
 
-      # if get_config('custom.assistant.enabled', False):
+      # if z2jh.get_config('custom.assistant.enabled', False):
       #   c.JupyterHub.services.append({
       #       'name': 'assistant',
       #       'url': 'http://assistant.prod.svc.cluster.local:80'.format(pod_ip),
@@ -121,7 +99,7 @@ jupyterhub:
       # pod_ip = socket.gethostbyname(socket.gethostname())
       # service_ip = os.environ["HUB_SERVICE_HOST"]
 
-      # if get_config('custom.assistant.enabled', False):
+      # if z2jh.get_config('custom.assistant.enabled', False):
       #   c.JupyterHub.services.append({
       #       'name': 'assistant',
       #       'admin': True,
@@ -174,7 +152,7 @@ jupyterhub:
 
 
               # LABELS
-              # c.KubeSpawner.singleuser_extra_labels = get_config('singleuser.extra-labels', {})
+              # c.KubeSpawner.singleuser_extra_labels = z2jh.get_config('singleuser.extra-labels', {})
               spawner.singleuser_extra_labels['edu-role'] = edu_role
               spawner.user_storage_extra_labels['edu-role'] = edu_role
 
@@ -233,7 +211,7 @@ jupyterhub:
 
               # VOLUME / MOUNT
               # WARNING: Adjusting these will lead to consequenses for future pods it hink
-              # c.KubeSpawner.volumes.extend(get_config('singleuser.storage.extra-volumes', []))
+              # c.KubeSpawner.volumes.extend(z2jh.get_config('singleuser.storage.extra-volumes', []))
               # spawner.volumes = spawner.volumes.extend([
               #   {
               #     'name': 'volume-nbgrader',
@@ -243,7 +221,7 @@ jupyterhub:
               #   }
               # ])
 
-              # c.KubeSpawner.volume_mounts.extend(get_config('singleuser.storage.extra-volume-mounts', []))
+              # c.KubeSpawner.volume_mounts.extend(z2jh.get_config('singleuser.storage.extra-volume-mounts', []))
               # spawner.volumeMounts = spawner.volumeMounts.extend([
               #   {
               #     'name': 'volume-nbgrader',
@@ -261,12 +239,12 @@ jupyterhub:
 
       c.JupyterHub.authenticator_class = LearnetAuthenticator
       # Import auth-information from extraConfigMap set in secret-values.yaml
-      c.MicrosoftOAuthenticator.client_id = get_config('custom.client-id')
-      c.MicrosoftOAuthenticator.client_secret = get_config('custom.client-secret')
-      c.MicrosoftOAuthenticator.oauth_callback_url = get_config('custom.callback-url')
-      c.MicrosoftOAuthenticator.hosted_domain = get_config('custom.hosted-domain')
-      c.MicrosoftOAuthenticator.login_service = get_config('custom.login-service')
-      email_domain = get_config('custom.hosted-domain')
+      c.MicrosoftOAuthenticator.client_id = z2jh.get_config('custom.client-id')
+      c.MicrosoftOAuthenticator.client_secret = z2jh.get_config('custom.client-secret')
+      c.MicrosoftOAuthenticator.oauth_callback_url = z2jh.get_config('custom.callback-url')
+      c.MicrosoftOAuthenticator.hosted_domain = z2jh.get_config('custom.hosted-domain')
+      c.MicrosoftOAuthenticator.login_service = z2jh.get_config('custom.login-service')
+      email_domain = z2jh.get_config('custom.hosted-domain')
     ### extraConfigMap auth details ADDED TO in secret-values.yaml
     # client-id:
     # client-secret:
@@ -282,7 +260,7 @@ jupyterhub:
     # image WRITTEN by ../build.py
     image:
       name: eu.gcr.io/jupyter-se/hub
-      tag: bigday04
+      tag: autoscale-03
     resources:
       requests:
         cpu: 0.2
@@ -381,7 +359,7 @@ jupyterhub:
     networkTools:
       image:
         name: jupyterhub/k8s-network-tools
-        tag: a21cecb
+        tag: 29ff4b9 # NON FUNCTIONAL: a21cecb
     cloudMetadata:
       enabled: false
       ip: 169.254.169.254
@@ -424,7 +402,7 @@ jupyterhub:
     # image WRITTEN by ../build.py
     image:
       name: eu.gcr.io/jupyter-se/singleuser
-      tag: bigday04
+      tag: autoscale-03
     startTimeout: 300
     cpu:
       limit: 2
@@ -451,7 +429,7 @@ jupyterhub:
     pause:
       image:
         name: gcr.io/google_containers/pause
-        tag: "3.0"
+        tag: '3.0'
 
   ingress:
     enabled: false

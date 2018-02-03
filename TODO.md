@@ -1,3 +1,23 @@
+# Latest TODOs
+- DONE: Figure out what contrib-nbextensions to use
+  - USE:
+    - gist_it/main
+    - hinterland/hinterland
+    - export_embedded/main
+    - comment-uncomment/main
+    - init_cell/main
+    - hide_header/main
+    - hide_input/main
+    - rubberband/main
+  - CONSIDER: code prettify, equation auto numbering, zenmode, move selected cells, hide input, freeze, ruler, variable inspector
+  
+- allow network tools by installing stuff
+- bugfix: singleuser login leads to 503 service unavailable until shutdown of su-server
+
+
+
+
+
 # Big day TODO
 - DONE: Allow scaling up to 25 nodes
 - NOT ALL THE WAY: Activity backend
@@ -10,8 +30,8 @@
   - DONE: EXTRA: Projects...
 
 # Pre-launch
-- Scale up to 25 nodes
-- Make sure the nodes have the images prepulled
+- DONE: Scale up to 25 nodes
+- DONE: Make sure the nodes have the images prepulled
 
 # Fixxa
 - DONE: Gradient descent repo
@@ -65,8 +85,8 @@
 
 # Permissions makes me angry...
 - learn about setfacl
-- learn about UID, GID
-- learn about chmod, chgrp, chown
+- DONE: learn about UID, GID
+- DONE: learn about chmod, chgrp, chown
 
 # Big learning
 - DONE: docker
@@ -90,7 +110,7 @@
 - Enable it to easily scale up and down
 - Enable it to tear down and set up
 
-- Project refactoring etc.
+- DONE: Project refactoring etc.
   - DONE: Secure secrets like this
           https://github.com/berkeley-dsep-infra/datahub/blob/staging/.gitattributes
   - DONE: Consider utilizing gitsubmodules
@@ -124,7 +144,7 @@
     - setup anonuid / anongid
     - 
 
-- get prepuller job under control on z2jh-extended (be able to invoke it)
+- DONE: get prepuller job under control on z2jh-extended (be able to invoke it)
 - DONE: get a git-repo volume setup
 - DONE: get a startup script hook setup
 
@@ -136,7 +156,11 @@
 - pip install --user <packagename>
 - conda install -p ~/.local <packagename>
 
+# Bugs
+- A user can end up as forbidden, unable to logout, forcing singleuser server shutdown by admin
+
 # autoscaling
+- test new system
 - cluster autoscaler + affinity
 - 
 
@@ -182,7 +206,7 @@
   - Learn more about Linux user and group permissions
     - DONE: Learn about changing user within docker
 
-- Use google cloud repository for docker images
+- DONE: Use google cloud repository for docker images
   - https://kubernetes.io/docs/concepts/containers/images/#specifying-imagepullsecrets-on-a-pod
   
   - DONE: Labels: Student / Instructor labelling of singleuser pods
@@ -193,9 +217,9 @@
     - teachers-to-students directory
     - nbgraders exchange directory
 
-- Scaling
+- DONE: Scaling
   - DONE: Manual scaling
-  - Autoscaling (cordon?, drain?, eh...)
+  - DONE: Autoscaling (cordon?, drain?, eh...)
 
 - Cluster teardown instructions
 
@@ -206,14 +230,17 @@
 
 
 # Advanced refinements
-- secure-access-to-helm
+- DONE: secure-access-to-helm
   https://zero-to-jupyterhub.readthedocs.io/en/v0.5-doc/security.html#secure-access-to-helm
-- audit-cloud-metadata-server-security
+  kubectl --namespace=kube-system patch deployment tiller-deploy --type=json --patch='[{"op": "add", "path": "/spec/template/spec/containers/0/command", "value": ["/tiller", "--listen=localhost:44134"]}]'
+- DONE: audit-cloud-metadata-server-security
   https://zero-to-jupyterhub.readthedocs.io/en/v0.5-doc/security.html#audit-cloud-metadata-server-security
-- delete-the-kubernetes-dashboard
+  http://zero-to-jupyterhub.readthedocs.io/en/v0.6/security.html#audit-cloud-metadata-server-access
+- DONE: delete-the-kubernetes-dashboard
   https://zero-to-jupyterhub.readthedocs.io/en/v0.5-doc/security.html#delete-the-kubernetes-dashboard
+  kubectl --namespace=kube-system delete deployment kubernetes-dashboard
 
-- Update the extraConfig values to be a dict
+- IGNORED: Update the extraConfig values to be a dict
   https://github.com/jupyterhub/zero-to-jupyterhub-k8s/pull/398
-- Utilize get_config in extraConfig without duplicating code
+- DONE: Utilize get_config in extraConfig without duplicating code
   https://github.com/jupyterhub/zero-to-jupyterhub-k8s/pull/397

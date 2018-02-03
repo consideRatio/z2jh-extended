@@ -1,4 +1,4 @@
-FROM jupyterhub/k8s-hub:b13e667
+FROM jupyterhub/k8s-hub:v0.6
 # https://hub.docker.com/r/jupyterhub/k8s-hub/
 
 USER root

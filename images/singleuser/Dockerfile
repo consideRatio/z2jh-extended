@@ -1,4 +1,4 @@
-FROM jupyter/minimal-notebook:0b3ec811c968
+FROM jupyter/minimal-notebook:9089b66a9813
 # Build from... https://hub.docker.com/r/jupyter/minimal-notebook/
 #               https://github.com/jupyter/docker-stacks/blob/master/minimal-notebook/Dockerfile
 # Built from... https://hub.docker.com/r/jupyter/base-notebook/
@@ -13,55 +13,35 @@ ARG JUPYTERHUB_VERSION=0.8.*
 RUN pip install --no-cache jupyterhub==$JUPYTERHUB_VERSION
 
 
-# conda/pip/apt install additional packages here, if desired.
+
+# conda packages
 RUN conda install -y -c conda-forge -c damianavila82 \
     ipyvolume \
     ipywidgets \
     numpy \
     rise \
     sympy \
-    nbgrader \
-    hide_code
+    jupyter_contrib_nbextensions
+    # nbgrader \  # excluded until successful usage demonstrated
+    # hide_code \ # excluded in favor of hide_input contrib_extension
 
+
+# pip packages
 RUN pip --no-cache-dir install \
     git+https://github.com/data-8/nbgitpuller \
     plotly
 
-RUN jupyter serverextension enable --py nbgitpuller --sys-prefix
+# activation
+RUN jupyter serverextension enable --python nbgitpuller --sys-prefix
+RUN jupyter nbextension enable gist_it/main && /
+    jupyter nbextension enable hinterland/hinterland && /
+    jupyter nbextension enable export_embedded/main && /
+    jupyter nbextension enable comment-uncomment/main && /
+    jupyter nbextension enable init_cell/main && /
+    jupyter nbextension enable hide_header/main && /
+    jupyter nbextension enable hide_input/main && /
+    jupyter nbextension enable rubberband/main
 
-USER root
-
-# --- FUTILE ATTEMPT TO SETUP NFS MOUNT ---
-# -----------------------------------------------------------------------------
-# So we can actually write the NSF mount
-ENV NBGRADER_EXCHANGE_DIR=/srv/nbgrader/exchange
-
-RUN mkdir -p $NBGRADER_EXCHANGE_DIR && \
-    chown $NB_USER:$NB_GID $NBGRADER_EXCHANGE_DIR && \
-    fix-permissions $NBGRADER_EXCHANGE_DIR
-
-ENV NBGRADER_EXCHANGE_DIR=/srv/nbgrader/exchanged
-
-RUN mkdir -p $NBGRADER_EXCHANGE_DIR && \
-    chown $NB_USER:$NB_GID $NBGRADER_EXCHANGE_DIR && \
-    /usr/local/bin/fix-permissions $NBGRADER_EXCHANGE_DIR
-
-# preparing the directories...
-# https://github.com/jupyterhub/dockerspawner/issues/160#issuecomment-330162308
-
-# create the notebook directory
-RUN NBDIR=/srv/nbgrader/newdir && \
-    mkdir "$NBDIR" && \
-    chown :100 "$NBDIR" && \
-    chmod g+rws "$NBDIR"
-# -----------------------------------------------------------------------------
-
-COPY start /usr/local/bin
-COPY pre-startup-bash /usr/local/bin
-COPY pre-startup-python /usr/local/bin
-RUN chmod o+rx \
-    /usr/local/bin/start \
-    /usr/local/bin/pre-startup-bash \
-    /usr/local/bin/pre-startup-python
-
-USER $NB_USER
+COPY --chown start /usr/local/bin
+COPY --chown pre-startup-bash /usr/local/bin
+COPY --chown pre-startup-python /usr/local/bin

@@ -13,5 +13,5 @@ charts:
           JUPYTERHUB_VERSION: 0.8.1
       # nfs-server:
       #   imageValuesPath: nfsServer.image
-      assistant:
-        imageValuesPath: assistant.image
+      # assistant:
+      #   imageValuesPath: assistant.image

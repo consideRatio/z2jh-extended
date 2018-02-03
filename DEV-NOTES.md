@@ -1,3 +1,11 @@
+# Upgrade helm / tiller
+https://docs.helm.sh/using_helm/#installing-helm
+
+### Upgrade tiller
+helm init --upgrade
+
+
+
 # Initial setup
 ## https://zero-to-jupyterhub.readthedocs.io/en/latest/create-k8s-cluster.html
 
