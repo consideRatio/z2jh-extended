@@ -1,3 +1,11 @@
+# delete stuff...
+kubectl delete clusterrole image-awaiter; kubectl delete clusterrolebinding image-awaiter; kubectl delete sa image-awaiter; kubectl delete job image-awaiter; kubectl delete ds hook-image-puller
+
+./build.py --push --deploy --tag image-awaiter-21
+
+
+
+
 # Upgrade helm / tiller
 https://docs.helm.sh/using_helm/#installing-helm
 
@@ -59,7 +67,7 @@ kubectl --namespace=kube-system patch deployment tiller-deploy \
 gcloud container clusters resize $CLUSTER_NAME --size 0
 
 ## Scale up
-#### NOTE: Helm upgrade > runs pre-puller > ensures new nodes gets images
+#### NOTE: Helm upgrade > runs image-awaiter > ensures new nodes gets images
 #### gcloud container clusters list
 gcloud container clusters resize $CLUSTER_NAME --size 1 --quiet
 helm upgrade $HELM_RELEASE \

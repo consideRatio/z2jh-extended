@@ -260,7 +260,7 @@ jupyterhub:
     # image WRITTEN by ../build.py
     image:
       name: eu.gcr.io/jupyter-se/hub
-      tag: autoscale-03
+      tag: image-puller-ok-v3
     resources:
       requests:
         cpu: 0.2
@@ -359,7 +359,7 @@ jupyterhub:
     networkTools:
       image:
         name: jupyterhub/k8s-network-tools
-        tag: 29ff4b9 # NON FUNCTIONAL: a21cecb
+        tag: v0.6
     cloudMetadata:
       enabled: false
       ip: 169.254.169.254
@@ -402,7 +402,7 @@ jupyterhub:
     # image WRITTEN by ../build.py
     image:
       name: eu.gcr.io/jupyter-se/singleuser
-      tag: autoscale-03
+      tag: image-puller-ok-v3
     startTimeout: 300
     cpu:
       limit: 2
@@ -417,13 +417,15 @@ jupyterhub:
     cmd: start
     defaultUrl:
 
-  prePuller:
+  imagePuller:
     hook:
       enabled: true
       extraEnv: {}
       image:
-        name: jupyterhub/k8s-pre-puller
-        tag: 2b02899
+        # name: jupyterhub/k8s-pre-puller
+        # tag: v0.6
+        name: eu.gcr.io/jupyter-se/image-awaiter
+        tag: image-puller-ok-v3
     continuous:
       enabled: true
     pause:

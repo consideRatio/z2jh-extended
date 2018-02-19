@@ -11,6 +11,8 @@ charts:
         imageValuesPath: jupyterhub.singleuser.image
         buildArgs:
           JUPYTERHUB_VERSION: 0.8.1
+      image-awaiter:
+        imageValuesPath: jupyterhub.imagePuller.hook.image
       # nfs-server:
       #   imageValuesPath: nfsServer.image
       # assistant:

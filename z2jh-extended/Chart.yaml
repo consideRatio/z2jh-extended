@@ -1,7 +1,7 @@
 apiVersion: v1
 description: An extended Zero-to-JupyterHub-K8s installation.
 name: z2jh-extended
-version: autoscale-03
+version: image-puller-ok-v3
 sources:
   - https://github.com/consideRatio/jupyter-se
 maintainers:

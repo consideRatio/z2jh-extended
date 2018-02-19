@@ -1,4 +1,13 @@
+# TODO:
+- DONE: go through the extensions again
+- check if init_cell is required in order to have youtubeclips display out of the box without pre-running. Perhaps a checkpoint is the only thing thats needed?
+- ensure image puller works
+- init_cell update
+- nbgitpuller UX button
+- nbgitpuller directory name
+
 # Latest TODOs
+- DONE: Allow the user to configure the contrib-nbextensions persistantly
 - DONE: Figure out what contrib-nbextensions to use
   - USE:
     - gist_it/main
@@ -10,10 +19,11 @@
     - hide_input/main
     - rubberband/main
   - CONSIDER: code prettify, equation auto numbering, zenmode, move selected cells, hide input, freeze, ruler, variable inspector
-  
+
 - allow network tools by installing stuff
 - bugfix: singleuser login leads to 503 service unavailable until shutdown of su-server
 
+- Attempt to minimize docker image size
 
 
 
@@ -144,7 +154,7 @@
     - setup anonuid / anongid
     - 
 
-- DONE: get prepuller job under control on z2jh-extended (be able to invoke it)
+- DONE: get imagepuller job under control on z2jh-extended (be able to invoke it)
 - DONE: get a git-repo volume setup
 - DONE: get a startup script hook setup
 

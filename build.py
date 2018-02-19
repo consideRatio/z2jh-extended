@@ -136,6 +136,7 @@ def deploy(chart, release):
 
     subprocess.check_call([
         'helm', 'upgrade', release,
+        '--wait', '--timeout', '1800',
         '--install',
         '--namespace', release,
         '--values', 'z2jh-extended/secret-values.yaml',

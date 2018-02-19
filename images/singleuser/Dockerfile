@@ -1,4 +1,4 @@
-FROM jupyter/minimal-notebook:9089b66a9813
+FROM jupyter/minimal-notebook:c54800018c2c
 # Build from... https://hub.docker.com/r/jupyter/minimal-notebook/
 #               https://github.com/jupyter/docker-stacks/blob/master/minimal-notebook/Dockerfile
 # Built from... https://hub.docker.com/r/jupyter/base-notebook/
@@ -16,15 +16,18 @@ RUN pip install --no-cache jupyterhub==$JUPYTERHUB_VERSION
 
 # conda packages
 RUN conda install -y -c conda-forge -c damianavila82 \
+    numpy \
+    sympy \
     ipyvolume \
     ipywidgets \
-    numpy \
+    seaborn \
+    bokeh \
+    altair \
     rise \
-    sympy \
     jupyter_contrib_nbextensions
     # nbgrader \  # excluded until successful usage demonstrated
-    # hide_code \ # excluded in favor of hide_input contrib_extension
 
+RUN echo "dirty hack..."
 
 # pip packages
 RUN pip --no-cache-dir install \
@@ -32,16 +35,28 @@ RUN pip --no-cache-dir install \
     plotly
 
 # activation
-RUN jupyter serverextension enable --python nbgitpuller --sys-prefix
-RUN jupyter nbextension enable gist_it/main && /
-    jupyter nbextension enable hinterland/hinterland && /
-    jupyter nbextension enable export_embedded/main && /
-    jupyter nbextension enable comment-uncomment/main && /
-    jupyter nbextension enable init_cell/main && /
-    jupyter nbextension enable hide_header/main && /
-    jupyter nbextension enable hide_input/main && /
-    jupyter nbextension enable rubberband/main
+RUN jupyter serverextension enable --sys-prefix --python nbgitpuller
 
-COPY --chown start /usr/local/bin
-COPY --chown pre-startup-bash /usr/local/bin
-COPY --chown pre-startup-python /usr/local/bin
+RUN jupyter nbextension enable --sys-prefix comment-uncomment/main && \
+    jupyter nbextension enable --sys-prefix hide_input/main && \
+    jupyter nbextension enable --sys-prefix gist_it/main && \
+    jupyter nbextension enable --sys-prefix init_cell/main && \
+    jupyter nbextension enable --sys-prefix splitcell/splitcell && \
+    jupyter nbextension enable --sys-prefix tree-filter/index && \
+    jupyter nbextension enable --sys-prefix rubberband/main && \
+    jupyter nbextension enable --sys-prefix toc2/main && \
+    jupyter nbextension enable --sys-prefix collapsible_headings/main && \
+    jupyter nbextension enable --sys-prefix export_embedded/main && \
+    jupyter nbextension enable --sys-prefix hide_header/main
+
+# permissions details
+USER root
+RUN groupadd students -g 1000
+USER ${NB_USER}
+
+# startup scripts
+COPY start pre-startup-bash pre-startup-python \
+    /usr/local/bin/
+
+# Dirty hack....
+RUN touch /home/jovyan/dirty-docker-trick
