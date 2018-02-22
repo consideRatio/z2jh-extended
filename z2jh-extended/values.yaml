@@ -49,7 +49,7 @@ jupyterhub:
     cookieSecret:
     publicURL:
     uid: 1000
-    fsGid: 1000
+    fsGid: 100
     nodeSelector: {}
     concurrentSpawnLimit: 64
     activeServerLimit:
@@ -112,6 +112,39 @@ jupyterhub:
       # -----------------------------------------------------------------------
 
       # Other
+      # FIXME: Support setting affinity directly in KubeSpawner
+      c.KubeSpawner.singleuser_extra_pod_config = {
+          'affinity': {
+              'podAffinity': {
+                  'preferredDuringSchedulingIgnoredDuringExecution': [{
+                      'weight': 50,
+                      'podAffinityTerm': {
+                          'labelSelector': {
+                              'matchExpressions': [{
+                                  'key': 'component',
+                                  'operator': 'In',
+                                  'values': ['hub']
+                              }]
+                          },
+                          'topologyKey': 'kubernetes.io/hostname'
+                      }
+                  }, {
+                      'weight': 5,
+                      'podAffinityTerm': {
+                          'labelSelector': {
+                              'matchExpressions': [{
+                                  'key': 'component',
+                                  'operator': 'In',
+                                  'values': ['singleuser-server']
+                              }]
+                          },
+                          'topologyKey': 'kubernetes.io/hostname'
+                      }
+                  }],
+              }
+          }
+      }
+
 
       # Auth
       from oauthenticator.microsoft import MicrosoftOAuthenticator
@@ -155,6 +188,10 @@ jupyterhub:
               # c.KubeSpawner.singleuser_extra_labels = z2jh.get_config('singleuser.extra-labels', {})
               spawner.singleuser_extra_labels['edu-role'] = edu_role
               spawner.user_storage_extra_labels['edu-role'] = edu_role
+
+
+              # JUPYTERLAB
+              c.Spawner.default_url = '/lab'
 
 
               # ANNOTATIONS
@@ -202,7 +239,7 @@ jupyterhub:
               # EXPLANATION: This UID overrides the Dockerfiles USER value
               # spawner.singleuser_uid = 1000
               # EXPLANATION: This GID is set to own the mounted volumes
-              # spawner.singleuser_fs_gid = 1000
+              # spawner.singleuser_fs_gid = 100
 
 
               # IMAGE
@@ -260,18 +297,18 @@ jupyterhub:
     # image WRITTEN by ../build.py
     image:
       name: eu.gcr.io/jupyter-se/hub
-      tag: image-puller-ok-v3
+      tag: testing-ca-3
     resources:
       requests:
         cpu: 0.2
         memory: 512Mi
-    services:
-      assistant:
-        name: assistant
-        # FIXME: the namespace (prod) is hardcoded!
-        url: http://assistant.prod.svc.cluster.local
-        ### apiToken  OVERRIDDEN in secret-values.yaml
-        apiToken:
+    # services:
+    #   assistant:
+    #     name: assistant
+    #     # FIXME: the namespace (prod) is hardcoded!
+    #     url: http://assistant.prod.svc.cluster.local
+    #     ### apiToken  OVERRIDDEN in secret-values.yaml
+    #     apiToken:
     imagePullPolicy: IfNotPresent
     pdb:
       enabled: true
@@ -361,7 +398,7 @@ jupyterhub:
         name: jupyterhub/k8s-network-tools
         tag: v0.6
     cloudMetadata:
-      enabled: false
+      enabled: true
       ip: 169.254.169.254
     extraLabels: {}
     extraEnv: {}
@@ -371,7 +408,10 @@ jupyterhub:
     # uid is adjusted by custom authenticators pre_spawn_start hook
     uid: 1000
     # fsGid is adjusted by the custom authenticators pre_spawn_start hook
-    fsGid: 1000
+    fsGid: 100
+    serviceAccountName:
+    # schedulerStrategy MODIFIED from default blank (defaults to 'spread')
+    schedulerStrategy: pack
     storage:
       type: dynamic
       ### extraVolumes is adjusted by custom authenticators pre_spawn_start hook
@@ -402,14 +442,14 @@ jupyterhub:
     # image WRITTEN by ../build.py
     image:
       name: eu.gcr.io/jupyter-se/singleuser
-      tag: image-puller-ok-v3
+      tag: testing-ca-3
     startTimeout: 300
     cpu:
       limit: 2
       ### guarantee MODIFIED from
       ### Allows for 6 users on 1 n1-standard-4 google machine
       ### Allows for 8 additional users for every n1-standard-4 google machine
-      guarantee: 0.450
+      guarantee: 0.445
     memory:
       limit: 1G
       ### guarantee MODIFIED from 1G
@@ -417,7 +457,7 @@ jupyterhub:
     cmd: start
     defaultUrl:
 
-  imagePuller:
+  prePuller:
     hook:
       enabled: true
       extraEnv: {}
@@ -425,7 +465,7 @@ jupyterhub:
         # name: jupyterhub/k8s-pre-puller
         # tag: v0.6
         name: eu.gcr.io/jupyter-se/image-awaiter
-        tag: image-puller-ok-v3
+        tag: testing-ca-3
     continuous:
       enabled: true
     pause:

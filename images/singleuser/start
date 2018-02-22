@@ -2,4 +2,4 @@
 
 pre-startup-bash "$@"
 pre-startup-python "$@"
-exec jupyterhub-singleuser "$@"
+exec jupyter-labhub "$@"

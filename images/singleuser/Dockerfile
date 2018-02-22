@@ -14,8 +14,19 @@ RUN pip install --no-cache jupyterhub==$JUPYTERHUB_VERSION
 
 
 
+# nodejs
+USER root
+RUN apt-get update && \
+    apt-get install -y curl && \
+    curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash - && \
+    apt-get install -y nodejs
+USER ${NB_USER}
+
+
+
 # conda packages
 RUN conda install -y -c conda-forge -c damianavila82 \
+    jupyterlab \
     numpy \
     sympy \
     ipyvolume \
@@ -27,12 +38,20 @@ RUN conda install -y -c conda-forge -c damianavila82 \
     jupyter_contrib_nbextensions
     # nbgrader \  # excluded until successful usage demonstrated
 
-RUN echo "dirty hack..."
+
 
 # pip packages
 RUN pip --no-cache-dir install \
     git+https://github.com/data-8/nbgitpuller \
     plotly
+
+
+
+# jupyterlab extensions
+RUN jupyter labextension install @jupyterlab/hub-extension && \
+    jupyter labextension install @jupyter-widgets/jupyterlab-manager
+
+
 
 # activation
 RUN jupyter serverextension enable --sys-prefix --python nbgitpuller
@@ -49,14 +68,8 @@ RUN jupyter nbextension enable --sys-prefix comment-uncomment/main && \
     jupyter nbextension enable --sys-prefix export_embedded/main && \
     jupyter nbextension enable --sys-prefix hide_header/main
 
-# permissions details
-USER root
-RUN groupadd students -g 1000
-USER ${NB_USER}
+
 
 # startup scripts
 COPY start pre-startup-bash pre-startup-python \
     /usr/local/bin/
-
-# Dirty hack....
-RUN touch /home/jovyan/dirty-docker-trick

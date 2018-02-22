@@ -12,8 +12,8 @@ kubectl delete clusterrole image-awaiter; kubectl delete clusterrolebinding imag
 
 --- build and run locally through proxy
 kubectl proxy --port=8080
-docker build --tag consideratio/iptest:v0 .
-docker run -it --rm --net=host consideratio/iptest:v0
+docker build --tag consideratio/iptest:v0 .;
+docker run -it --rm --net=host consideratio/iptest:v0 /image-awaiter -debug -namespace prod
 
 --- run on cluster
 kubectl run iptest --image=docker.io/consideratio/iptest:v1 --port=8080
