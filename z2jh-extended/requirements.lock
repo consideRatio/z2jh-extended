@@ -1,6 +1,6 @@
 dependencies:
 - name: jupyterhub
   repository: file://../z2jh/jupyterhub
-  version: v0.6.0
-digest: sha256:837911ec751071fbf11987aa941441add5ceb52195a2d6bdaeed7b23ede301c5
-generated: 2018-01-01T23:58:32.217447266+01:00
+  version: v0.7
+digest: sha256:060731e2b2e3d9db3635b5f2f624e06a9fedcef48f438f7868b35e6eab189762
+generated: 2018-02-23T00:37:38.462092374+01:00

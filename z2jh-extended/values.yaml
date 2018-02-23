@@ -297,18 +297,18 @@ jupyterhub:
     # image WRITTEN by ../build.py
     image:
       name: eu.gcr.io/jupyter-se/hub
-      tag: testing-ca-3
+      tag: pr-502-completed
     resources:
       requests:
         cpu: 0.2
         memory: 512Mi
-    # services:
-    #   assistant:
-    #     name: assistant
-    #     # FIXME: the namespace (prod) is hardcoded!
-    #     url: http://assistant.prod.svc.cluster.local
-    #     ### apiToken  OVERRIDDEN in secret-values.yaml
-    #     apiToken:
+    services:
+      assistant:
+        name: assistant
+        # FIXME: the namespace (prod) is hardcoded!
+        url: http://assistant.prod.svc.cluster.local
+        ### apiToken  OVERRIDDEN in secret-values.yaml
+        apiToken:
     imagePullPolicy: IfNotPresent
     pdb:
       enabled: true
@@ -398,7 +398,7 @@ jupyterhub:
         name: jupyterhub/k8s-network-tools
         tag: v0.6
     cloudMetadata:
-      enabled: true
+      enabled: false
       ip: 169.254.169.254
     extraLabels: {}
     extraEnv: {}
@@ -442,7 +442,7 @@ jupyterhub:
     # image WRITTEN by ../build.py
     image:
       name: eu.gcr.io/jupyter-se/singleuser
-      tag: testing-ca-3
+      tag: pr-502-completed
     startTimeout: 300
     cpu:
       limit: 2
@@ -465,7 +465,7 @@ jupyterhub:
         # name: jupyterhub/k8s-pre-puller
         # tag: v0.6
         name: eu.gcr.io/jupyter-se/image-awaiter
-        tag: testing-ca-3
+        tag: pr-502-completed
     continuous:
       enabled: true
     pause:
