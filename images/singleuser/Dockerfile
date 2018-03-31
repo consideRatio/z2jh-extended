@@ -34,9 +34,16 @@ RUN conda install -y -c conda-forge -c damianavila82 \
     seaborn \
     bokeh \
     altair \
-    rise \
-    jupyter_contrib_nbextensions
+    rise
     # nbgrader \  # excluded until successful usage demonstrated
+
+RUN conda install -y -c conda-forge \
+    jupyter_contrib_nbextensions \
+    jupyterlab_iframe \
+    jupyterlab_latex \
+    jupyterlab_github \
+    jupyterlab_templates \
+    jupyterlab-discovery 
 
 
 
@@ -46,30 +53,35 @@ RUN pip --no-cache-dir install \
     plotly
 
 
-
-# jupyterlab extensions
-RUN jupyter labextension install @jupyterlab/hub-extension && \
-    jupyter labextension install @jupyter-widgets/jupyterlab-manager
-
-
-
-# activation
+# extensions
 RUN jupyter serverextension enable --sys-prefix --python nbgitpuller
 
+# modern jupyterlab extensions
+RUN jupyter labextension install @jupyterlab/hub-extension && \
+    jupyter labextension install @jupyter-widgets/jupyterlab-manager && \
+    jupyter labextension install jupyterlab_iframe && \
+    jupyter serverextension enable --py jupyterlab_iframe && \
+    jupyter labextension install @mflevine/jupyterlab_html && \
+    jupyter labextension install @mflevine/jupyterlab_html && \
+    jupyter labextension install @jupyterlab/latex && \
+    jupyter serverextension enable --sys-prefix jupyterlab_latex && \
+    jupyter labextension install @jupyterlab/github && \
+    jupyter serverextension enable --sys-prefix jupyterlab_github && \
+    jupyter labextension install jupyterlab_templates && \
+    jupyter serverextension enable --py jupyterlab_templates && \
+    jupyter serverextension enable [--sys-prefix|--user|--system] jupyterlab_discovery
+
+# classical notebook extensions
 RUN jupyter nbextension enable --sys-prefix comment-uncomment/main && \
     jupyter nbextension enable --sys-prefix hide_input/main && \
-    jupyter nbextension enable --sys-prefix gist_it/main && \
-    jupyter nbextension enable --sys-prefix init_cell/main && \
     jupyter nbextension enable --sys-prefix splitcell/splitcell && \
     jupyter nbextension enable --sys-prefix tree-filter/index && \
     jupyter nbextension enable --sys-prefix rubberband/main && \
     jupyter nbextension enable --sys-prefix toc2/main && \
-    jupyter nbextension enable --sys-prefix collapsible_headings/main && \
     jupyter nbextension enable --sys-prefix export_embedded/main && \
     jupyter nbextension enable --sys-prefix hide_header/main
 
 
 
 # startup scripts
-COPY start pre-startup-bash pre-startup-python \
-    /usr/local/bin/
+COPY start pre-startup-bash pre-startup-python /usr/local/bin/

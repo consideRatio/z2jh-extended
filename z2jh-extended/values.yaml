@@ -74,6 +74,8 @@ jupyterhub:
       import os
       import z2jh
 
+      # Dummy comment
+
       # -----------------------------------------------------------------------
 
       # assistant hub EXTERNAL service --- bad idea, go external...
@@ -110,41 +112,6 @@ jupyterhub:
       #       }
       #   })
       # -----------------------------------------------------------------------
-
-      # Other
-      # FIXME: Support setting affinity directly in KubeSpawner
-      c.KubeSpawner.singleuser_extra_pod_config = {
-          'affinity': {
-              'podAffinity': {
-                  'preferredDuringSchedulingIgnoredDuringExecution': [{
-                      'weight': 50,
-                      'podAffinityTerm': {
-                          'labelSelector': {
-                              'matchExpressions': [{
-                                  'key': 'component',
-                                  'operator': 'In',
-                                  'values': ['hub']
-                              }]
-                          },
-                          'topologyKey': 'kubernetes.io/hostname'
-                      }
-                  }, {
-                      'weight': 5,
-                      'podAffinityTerm': {
-                          'labelSelector': {
-                              'matchExpressions': [{
-                                  'key': 'component',
-                                  'operator': 'In',
-                                  'values': ['singleuser-server']
-                              }]
-                          },
-                          'topologyKey': 'kubernetes.io/hostname'
-                      }
-                  }],
-              }
-          }
-      }
-
 
       # Auth
       from oauthenticator.microsoft import MicrosoftOAuthenticator
@@ -282,12 +249,19 @@ jupyterhub:
       c.MicrosoftOAuthenticator.hosted_domain = z2jh.get_config('custom.hosted-domain')
       c.MicrosoftOAuthenticator.login_service = z2jh.get_config('custom.login-service')
       email_domain = z2jh.get_config('custom.hosted-domain')
+
+      # For the JupyterLab-GitHub extension
+      # https://github.com/jupyterlab/jupyterlab-github
+      c.GitHubConfig.client_id = z2jh.get_config('custom.github-client-id')
+      c.GitHubConfig.client_secret = z2jh.get_config('custom.github-client-secret')
     ### extraConfigMap auth details ADDED TO in secret-values.yaml
     # client-id:
     # client-secret:
     # callback-url:
     # hosted-domain:
     # login-service:
+    # github-client-id
+    # github-client-secret
     extraConfigMap: {}
     ### extraEnv OVERRIDDEN in secret-values.yaml
     extraEnv: {}
@@ -297,18 +271,18 @@ jupyterhub:
     # image WRITTEN by ../build.py
     image:
       name: eu.gcr.io/jupyter-se/hub
-      tag: pr-502-completed
+      tag: packing-18
     resources:
       requests:
         cpu: 0.2
         memory: 512Mi
-    services:
-      assistant:
-        name: assistant
-        # FIXME: the namespace (prod) is hardcoded!
-        url: http://assistant.prod.svc.cluster.local
-        ### apiToken  OVERRIDDEN in secret-values.yaml
-        apiToken:
+    # services:
+    #   assistant:
+    #     name: assistant
+    #     # FIXME: the namespace (prod) is hardcoded!
+    #     url: http://assistant.prod.svc.cluster.local
+    #     ### apiToken  OVERRIDDEN in secret-values.yaml
+    #     apiToken:
     imagePullPolicy: IfNotPresent
     pdb:
       enabled: true
@@ -442,7 +416,7 @@ jupyterhub:
     # image WRITTEN by ../build.py
     image:
       name: eu.gcr.io/jupyter-se/singleuser
-      tag: pr-502-completed
+      tag: packing-10
     startTimeout: 300
     cpu:
       limit: 2
@@ -459,13 +433,13 @@ jupyterhub:
 
   prePuller:
     hook:
-      enabled: true
+      enabled: false
       extraEnv: {}
       image:
         # name: jupyterhub/k8s-pre-puller
         # tag: v0.6
         name: eu.gcr.io/jupyter-se/image-awaiter
-        tag: pr-502-completed
+        tag: packing-10
     continuous:
       enabled: true
     pause:
