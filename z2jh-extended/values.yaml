@@ -42,74 +42,26 @@ nfsServer:
 # JupyterHub subchart override
 jupyterhub:
   hub:
-    service:
-      type: ClusterIP
-    baseUrl: /
     ### cookieSecret OVERRIDDEN in secret-values.yaml
     cookieSecret:
-    publicURL:
-    uid: 1000
-    fsGid: 100
-    nodeSelector: {}
-    concurrentSpawnLimit: 64
-    activeServerLimit:
-    db:
-      type: sqlite-pvc
-      upgrade:
-      pvc:
-        annotations: {}
-        selector: {}
-        accessModes:
-          - ReadWriteOnce
-        storage: 1Gi
-        subPath:
-        storageClassName:
-      url:
-    labels: {}
     ### extraConfig MODIFIED
     extraConfig: |
-      # Useful functions duplicated from z2jh/images/hub/jupyterhub_config.py
-      # See https://github.com/jupyterhub/zero-to-jupyterhub-k8s/issues/374
-      # -----------------------------------------------------------------------
       import os
       import z2jh
 
-      # Dummy comment
-
       # -----------------------------------------------------------------------
-
-      # assistant hub EXTERNAL service --- bad idea, go external...
+      # assistant hub EXTERNAL service
       # it seems like jupyterhub's ip routing cant handle k8s complexity
       # http://jupyterhub.readthedocs.io/en/latest/reference/services.html
       # -----------------------------------------------------------------------
       # import socket
       # pod_ip = socket.gethostbyname(socket.gethostname())
       # service_ip = os.environ["HUB_SERVICE_HOST"]
-
+      #
       # if z2jh.get_config('custom.assistant.enabled', False):
       #   c.JupyterHub.services.append({
       #       'name': 'assistant',
       #       'url': 'http://assistant.prod.svc.cluster.local:80'.format(pod_ip),
-      #   })
-      # -----------------------------------------------------------------------
-
-      # assistant hub internal service --- bad idea, go external...
-      # it seems like jupyterhub's ip routing cant handle k8s complexity
-      # http://jupyterhub.readthedocs.io/en/latest/reference/services.html
-      # -----------------------------------------------------------------------
-      # import socket
-      # pod_ip = socket.gethostbyname(socket.gethostname())
-      # service_ip = os.environ["HUB_SERVICE_HOST"]
-
-      # if z2jh.get_config('custom.assistant.enabled', False):
-      #   c.JupyterHub.services.append({
-      #       'name': 'assistant',
-      #       'admin': True,
-      #       'url': 'http://{}:8090'.format(pod_ip),
-      #       'command': ['flask', 'run', '--port=8090'],
-      #       'environment': {
-      #           'FLASK_APP': '/usr/local/bin/whoami.py',
-      #       }
       #   })
       # -----------------------------------------------------------------------
 
@@ -157,10 +109,6 @@ jupyterhub:
               spawner.user_storage_extra_labels['edu-role'] = edu_role
 
 
-              # JUPYTERLAB
-              c.Spawner.default_url = '/lab'
-
-
               # ANNOTATIONS
               # - School info?
               # config c.KubeSpawner.singleuser_extra_annotations = Dict()
@@ -191,49 +139,10 @@ jupyterhub:
               # spawner.cmd = ['start-notebook.sh']
 
 
-              # IDEA: Set this to None and allow the dockerfile entrypoint
-              #       solve some permissions details first!
-
               # TODO: figre out if setting these differently based on the user
               # could eliminate the need to create multiple images.
               # - https://github.com/jupyterhub/kubespawner/issues/18#issuecomment-272633065
-
-              # TODO: Switch user from script? Perhaps no need...
-              # exec ... https://unix.stackexchange.com/a/163896/257111
-
-
-              # USER / GROUP
-              # EXPLANATION: This UID overrides the Dockerfiles USER value
-              # spawner.singleuser_uid = 1000
-              # EXPLANATION: This GID is set to own the mounted volumes
-              # spawner.singleuser_fs_gid = 100
-
-
-              # IMAGE
-              # c.KubeSpawner.singleuser_image_spec = os.environ['SINGLEUSER_IMAGE']              
-              # TODO: figure out how to set this properly
-
-              # VOLUME / MOUNT
-              # WARNING: Adjusting these will lead to consequenses for future pods it hink
-              # c.KubeSpawner.volumes.extend(z2jh.get_config('singleuser.storage.extra-volumes', []))
-              # spawner.volumes = spawner.volumes.extend([
-              #   {
-              #     'name': 'volume-nbgrader',
-              #     'persistentVolumeClaim': {
-              #       'claimName': 'nfs-pvc'
-              #     }
-              #   }
-              # ])
-
-              # c.KubeSpawner.volume_mounts.extend(z2jh.get_config('singleuser.storage.extra-volume-mounts', []))
-              # spawner.volumeMounts = spawner.volumeMounts.extend([
-              #   {
-              #     'name': 'volume-nbgrader',
-              #     'mountPath': '/srv/nbgrader/exchange',
-              #     'subPath': None
-              #   }
-              # ])
-              
+             
 
               # - extra_container_config:
               #   Extra configuration (e.g. envFrom) for notebook container which is not covered by parameters above.
@@ -264,18 +173,11 @@ jupyterhub:
     # github-client-secret
     extraConfigMap: {}
     ### extraEnv OVERRIDDEN in secret-values.yaml
-    extraEnv: {}
-    extraContainers: []
-    extraVolumes: []
-    extraVolumeMounts: []
+    extraEnv: []
     # image WRITTEN by ../build.py
     image:
       name: eu.gcr.io/jupyter-se/hub
-      tag: packing-18
-    resources:
-      requests:
-        cpu: 0.2
-        memory: 512Mi
+      tag: lab-update-02
     # services:
     #   assistant:
     #     name: assistant
@@ -283,68 +185,16 @@ jupyterhub:
     #     url: http://assistant.prod.svc.cluster.local
     #     ### apiToken  OVERRIDDEN in secret-values.yaml
     #     apiToken:
-    imagePullPolicy: IfNotPresent
-    pdb:
-      enabled: true
-
-  rbac:
-    enabled: true
 
   proxy:
     ### secretToken OVERRIDDEN in secret-values.yaml
     secretToken: ''
-    service:
-      type: LoadBalancer
-      labels: {}
-      annotations: {}
-      nodePorts:
-        http:
-        https:
-    chp:
-      image:
-        name: jupyterhub/configurable-http-proxy
-        tag: 3.0.0
-        pullPolicy: IfNotPresent
-      cmd:
-        - configurable-http-proxy
-        - --ip=0.0.0.0
-        - --port=8000
-        - --api-ip=0.0.0.0
-        - --api-port=8001
-        - --default-target=http://$(HUB_SERVICE_HOST):$(HUB_SERVICE_PORT)
-        - --error-target=http://$(HUB_SERVICE_HOST):$(HUB_SERVICE_PORT)
-        - --log-level=debug
-      resources:
-        requests:
-          cpu: 0.2
-          memory: 512Mi
-    nginx:
-      image:
-        name: quay.io/kubernetes-ingress-controller/nginx-ingress-controller
-        tag: 0.9.0
-        pullPolicy: IfNotPresent
-      proxyBodySize: 64m
-      resources: {}
-    lego:
-      image:
-        name: jetstack/kube-lego
-        # We need a couple of fixes related to ingress.provider that are in master
-        # When 0.1.6 is released, switch to that!
-        tag: master-2368
-      resources: {}
-    labels:
-    nodeSelector: {}
-    pdb:
-      enabled: true
     https:
       enabled: true
       type: letsencrypt
       letsencrypt:
         ### contactEmail OVERRIDDEN in secret-values.yaml
         contactEmail: ''
-      manual:
-        key:
-        cert:
       ### hosts OVERRIDDEN in secret-values.yaml
       hosts: []
 
@@ -369,21 +219,9 @@ jupyterhub:
   singleuser:
     networkTools:
       image:
+        # tag MODIFIED manually, picking latest tag from https://hub.docker.com/r/jupyterhub/k8s-network-tools/tags/
         name: jupyterhub/k8s-network-tools
-        tag: v0.6
-    cloudMetadata:
-      enabled: false
-      ip: 169.254.169.254
-    extraLabels: {}
-    extraEnv: {}
-    lifecycleHooks:
-    initContainers:
-    nodeSelector: {}
-    # uid is adjusted by custom authenticators pre_spawn_start hook
-    uid: 1000
-    # fsGid is adjusted by the custom authenticators pre_spawn_start hook
-    fsGid: 100
-    serviceAccountName:
+        tag: 81c2613
     # schedulerStrategy MODIFIED from default blank (defaults to 'spread')
     schedulerStrategy: pack
     storage:
@@ -405,19 +243,12 @@ jupyterhub:
           subPath: jupyter-se-getting-started
       # - name: nbgrader
       #   mountPath: /srv/nbgrader/exchange
-      static:
-        pvcName:
-        subPath: '{username}'
       ### capacity MODIFIED from 10Gi
       capacity: 256Mi
-      homeMountPath: /home/jovyan
-      dynamic:
-        storageClass:
     # image WRITTEN by ../build.py
     image:
       name: eu.gcr.io/jupyter-se/singleuser
-      tag: packing-10
-    startTimeout: 300
+      tag: lab-update-02
     cpu:
       limit: 2
       ### guarantee MODIFIED from
@@ -428,30 +259,20 @@ jupyterhub:
       limit: 1G
       ### guarantee MODIFIED from 1G
       guarantee: 1G
+    ### cmd MODIFIED from jupyterhub-singleuser
     cmd: start
-    defaultUrl:
+    ### defaultUrl MODIFIED from blank
+    defaultUrl: '/lab'
 
   prePuller:
     hook:
       enabled: false
-      extraEnv: {}
       image:
-        # name: jupyterhub/k8s-pre-puller
-        # tag: v0.6
-        name: eu.gcr.io/jupyter-se/image-awaiter
-        tag: packing-10
+        name: jupyterhub/k8s-image-awaiter
+        # tag MODIFIED manually, picking latest tag from https://hub.docker.com/r/jupyterhub/k8s-image-awaiter/tags/
+        tag: 01eac78
     continuous:
       enabled: true
-    pause:
-      image:
-        name: gcr.io/google_containers/pause
-        tag: '3.0'
-
-  ingress:
-    enabled: false
-    annotations: {}
-    hosts: []
-    tls:
 
   cull:
     enabled: true

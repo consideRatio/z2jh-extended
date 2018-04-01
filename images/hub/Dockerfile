@@ -1,4 +1,4 @@
-FROM jupyterhub/k8s-hub:4ccea06
+FROM jupyterhub/k8s-hub:fad0f64
 # https://hub.docker.com/r/jupyterhub/k8s-hub/
 
 USER root

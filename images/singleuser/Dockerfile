@@ -37,20 +37,21 @@ RUN conda install -y -c conda-forge -c damianavila82 \
     rise
     # nbgrader \  # excluded until successful usage demonstrated
 
-RUN conda install -y -c conda-forge \
-    jupyter_contrib_nbextensions \
-    jupyterlab_iframe \
-    jupyterlab_latex \
-    jupyterlab_github \
-    jupyterlab_templates \
-    jupyterlab-discovery 
-
 
 
 # pip packages
 RUN pip --no-cache-dir install \
     git+https://github.com/data-8/nbgitpuller \
     plotly
+
+# more pip packages
+RUN pip --no-cache-dir install \
+    jupyter_contrib_nbextensions \
+    jupyterlab_iframe \
+    jupyterlab_latex \
+    jupyterlab_github \
+    jupyterlab_templates \
+    jupyterlab-discovery 
 
 
 # extensions
@@ -69,7 +70,9 @@ RUN jupyter labextension install @jupyterlab/hub-extension && \
     jupyter serverextension enable --sys-prefix jupyterlab_github && \
     jupyter labextension install jupyterlab_templates && \
     jupyter serverextension enable --py jupyterlab_templates && \
-    jupyter serverextension enable [--sys-prefix|--user|--system] jupyterlab_discovery
+    jupyter serverextension enable --sys-prefix jupyterlab_discovery && \
+    jupyter labextension install @jupyterlab/plotly-extension && \
+    jupyter labextension install jupyterlab_bokeh
 
 # classical notebook extensions
 RUN jupyter nbextension enable --sys-prefix comment-uncomment/main && \
