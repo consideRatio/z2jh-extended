@@ -42,142 +42,113 @@ nfsServer:
 # JupyterHub subchart override
 jupyterhub:
   hub:
+    nodeSelector:
+      node-purpose: core
     ### cookieSecret OVERRIDDEN in secret-values.yaml
     cookieSecret:
     ### extraConfig MODIFIED
-    extraConfig: |
-      import os
-      import z2jh
+    extraConfig:
+      # assistant: |
+        # import os
+        # import z2jh
+        # -----------------------------------------------------------------------
+        # assistant hub EXTERNAL service
+        # it seems like jupyterhub's ip routing cant handle k8s complexity
+        # http://jupyterhub.readthedocs.io/en/latest/reference/services.html
+        # -----------------------------------------------------------------------
+        # import socket
+        # pod_ip = socket.gethostbyname(socket.gethostname())
+        # service_ip = os.environ["HUB_SERVICE_HOST"]
+        #
+        # if z2jh.get_config('custom.assistant.enabled', False):
+        #   c.JupyterHub.services.append({
+        #       'name': 'assistant',
+        #       'url': 'http://assistant.prod.svc.cluster.local:80'.format(pod_ip),
+        #   })
+        # -----------------------------------------------------------------------
+      auth: |
+        import z2jh
 
-      # -----------------------------------------------------------------------
-      # assistant hub EXTERNAL service
-      # it seems like jupyterhub's ip routing cant handle k8s complexity
-      # http://jupyterhub.readthedocs.io/en/latest/reference/services.html
-      # -----------------------------------------------------------------------
-      # import socket
-      # pod_ip = socket.gethostbyname(socket.gethostname())
-      # service_ip = os.environ["HUB_SERVICE_HOST"]
-      #
-      # if z2jh.get_config('custom.assistant.enabled', False):
-      #   c.JupyterHub.services.append({
-      #       'name': 'assistant',
-      #       'url': 'http://assistant.prod.svc.cluster.local:80'.format(pod_ip),
-      #   })
-      # -----------------------------------------------------------------------
+        # Auth
+        from oauthenticator.microsoft import MicrosoftOAuthenticator
+        class LearnetAuthenticator(MicrosoftOAuthenticator):  
+            from tornado import gen
 
-      # Auth
-      from oauthenticator.microsoft import MicrosoftOAuthenticator
-      class LearnetAuthenticator(MicrosoftOAuthenticator):  
-          from tornado import gen
-
-          @gen.coroutine
-          def pre_spawn_start(self, user, spawner):
-              auth_state = yield user.get_auth_state()
-              if not auth_state:
-                  return
-
-
-              # USER ROLE
-              if str(auth_state['microsoft_user']['jobTitle']) == 'Lärare':
-                edu_role = 'instructor'
-              elif str(auth_state['microsoft_user']['jobTitle']) == 'Elev':
-                edu_role = 'student'
-              else:
-                edu_role = 'unknown'
+            @gen.coroutine
+            def pre_spawn_start(self, user, spawner):
+                auth_state = yield user.get_auth_state()
+                if not auth_state:
+                    return
 
 
-              # ENV
-              spawner.environment['AUTH_USERNAME'] = str(user.name)
-              spawner.environment['AUTH_ACCESS_TOKEN'] = str(auth_state['access_token'])
-              spawner.environment['AUTH_ID'] = str(auth_state['microsoft_user']['id'])
-              spawner.environment['AUTH_USER_PRINCIPAL_NAME'] = str(auth_state['microsoft_user']['userPrincipalName'])
-              spawner.environment['AUTH_DISPLAY_NAME'] = str(auth_state['microsoft_user']['displayName'])
-              spawner.environment['AUTH_GIVEN_NAME'] = str(auth_state['microsoft_user']['givenName'])
-              spawner.environment['AUTH_SURNAME'] = str(auth_state['microsoft_user']['surname'])
-              spawner.environment['AUTH_MAIL'] = str(auth_state['microsoft_user']['mail'])
-              spawner.environment['AUTH_MOBILE_PHONE'] = str(auth_state['microsoft_user']['mobilePhone'])
-              spawner.environment['AUTH_BUSINESS_PHONES'] = str(auth_state['microsoft_user']['businessPhones'])
-              spawner.environment['AUTH_JOB_TITLE'] = str(auth_state['microsoft_user']['jobTitle'])
-              spawner.environment['AUTH_OFFICE_LOCATION'] = str(auth_state['microsoft_user']['officeLocation'])
-              spawner.environment['AUTH_PREFERRED_LANGUAGE'] = str(auth_state['microsoft_user']['preferredLanguage'])
-              spawner.environment['EDU_ROLE'] = edu_role
+                # USER ROLE
+                if str(auth_state['microsoft_user']['jobTitle']) == 'Lärare':
+                  edu_role = 'instructor'
+                elif str(auth_state['microsoft_user']['jobTitle']) == 'Elev':
+                  edu_role = 'student'
+                else:
+                  edu_role = 'unknown'
 
 
-              # LABELS
-              # c.KubeSpawner.singleuser_extra_labels = z2jh.get_config('singleuser.extra-labels', {})
-              spawner.singleuser_extra_labels['edu-role'] = edu_role
-              spawner.user_storage_extra_labels['edu-role'] = edu_role
+                # ENV
+                spawner.environment['AUTH_USERNAME'] = str(user.name)
+                spawner.environment['AUTH_ACCESS_TOKEN'] = str(auth_state['access_token'])
+                spawner.environment['AUTH_ID'] = str(auth_state['microsoft_user']['id'])
+                spawner.environment['AUTH_USER_PRINCIPAL_NAME'] = str(auth_state['microsoft_user']['userPrincipalName'])
+                spawner.environment['AUTH_DISPLAY_NAME'] = str(auth_state['microsoft_user']['displayName'])
+                spawner.environment['AUTH_GIVEN_NAME'] = str(auth_state['microsoft_user']['givenName'])
+                spawner.environment['AUTH_SURNAME'] = str(auth_state['microsoft_user']['surname'])
+                spawner.environment['AUTH_MAIL'] = str(auth_state['microsoft_user']['mail'])
+                spawner.environment['AUTH_MOBILE_PHONE'] = str(auth_state['microsoft_user']['mobilePhone'])
+                spawner.environment['AUTH_BUSINESS_PHONES'] = str(auth_state['microsoft_user']['businessPhones'])
+                spawner.environment['AUTH_JOB_TITLE'] = str(auth_state['microsoft_user']['jobTitle'])
+                spawner.environment['AUTH_OFFICE_LOCATION'] = str(auth_state['microsoft_user']['officeLocation'])
+                spawner.environment['AUTH_PREFERRED_LANGUAGE'] = str(auth_state['microsoft_user']['preferredLanguage'])
+                spawner.environment['EDU_ROLE'] = edu_role
+
+                spawner.environment['NBGITPULLER_APP'] = 'lab'
 
 
-              # ANNOTATIONS
-              # - School info?
-              # config c.KubeSpawner.singleuser_extra_annotations = Dict()
+                # LABELS
+                # c.KubeSpawner.singleuser_extra_labels = z2jh.get_config('singleuser.extra-labels', {})
+                spawner.singleuser_extra_labels['edu-role'] = edu_role
+                spawner.user_storage_extra_labels['edu-role'] = edu_role
 
 
-              # HOOKS
-              # These hooks can run before, during or after the docker image entrypoint
-              # https://github.com/jupyterhub/kubespawner/blob/master/kubespawner/spawner.py#L613
-              # spawner.singleuser_lifecycle_hooks = {
-              #   'postStart': {
-              #     'exec': {
-              #       'command': ['/bin/sh', '-c', 'echo Hello Im $(whoami) from the postStart handler > /home/jovyan/message']
-              #     }
-              #   }
-              # }
+                # HOOKS
+                # These hooks can run before, during or after the docker image entrypoint
+                # https://github.com/jupyterhub/kubespawner/blob/master/kubespawner/spawner.py#L613
+                # spawner.singleuser_lifecycle_hooks = {
+                #   'postStart': {
+                #     'exec': {
+                #       'command': ['/bin/sh', '-c', 'echo Hello Im $(whoami) from the postStart handler > /home/jovyan/message']
+                #     }
+                #   }
+                # }
 
 
-              # ENTRYPOINT (kubernetes terminology: command)
-              # Kubespawner does not allow you to change this.
-              # The jupyter/docker-stacks images default entrypoint is...
-              # ENTRYPOINT ["tini", "--"]
-              # https://github.com/jupyter/docker-stacks
-              # 
-              # Read more of why you want tini at...
-              # https://github.com/krallin/tini/issues/8
+        c.JupyterHub.authenticator_class = LearnetAuthenticator
+        # Import auth-information from extraConfigMap set in secret-values.yaml
+        c.MicrosoftOAuthenticator.client_id = z2jh.get_config('custom.client-id')
+        c.MicrosoftOAuthenticator.client_secret = z2jh.get_config('custom.client-secret')
+        c.MicrosoftOAuthenticator.oauth_callback_url = z2jh.get_config('custom.callback-url')
+        c.MicrosoftOAuthenticator.hosted_domain = z2jh.get_config('custom.hosted-domain')
+        c.MicrosoftOAuthenticator.login_service = z2jh.get_config('custom.login-service')
+        email_domain = z2jh.get_config('custom.hosted-domain')
 
-              # CMD (kubernetes terminology: args)
-              # spawner.cmd = ['start-notebook.sh']
-
-
-              # TODO: figre out if setting these differently based on the user
-              # could eliminate the need to create multiple images.
-              # - https://github.com/jupyterhub/kubespawner/issues/18#issuecomment-272633065
-             
-
-              # - extra_container_config:
-              #   Extra configuration (e.g. envFrom) for notebook container which is not covered by parameters above.
-              # - extra_pod_config:
-              #   Extra configuration (e.g. tolerations) for pod which is not covered by parameters above.
-
-
-      c.JupyterHub.authenticator_class = LearnetAuthenticator
-      # Import auth-information from extraConfigMap set in secret-values.yaml
-      c.MicrosoftOAuthenticator.client_id = z2jh.get_config('custom.client-id')
-      c.MicrosoftOAuthenticator.client_secret = z2jh.get_config('custom.client-secret')
-      c.MicrosoftOAuthenticator.oauth_callback_url = z2jh.get_config('custom.callback-url')
-      c.MicrosoftOAuthenticator.hosted_domain = z2jh.get_config('custom.hosted-domain')
-      c.MicrosoftOAuthenticator.login_service = z2jh.get_config('custom.login-service')
-      email_domain = z2jh.get_config('custom.hosted-domain')
-
-      # For the JupyterLab-GitHub extension
-      # https://github.com/jupyterlab/jupyterlab-github
-      c.GitHubConfig.client_id = z2jh.get_config('custom.github-client-id')
-      c.GitHubConfig.client_secret = z2jh.get_config('custom.github-client-secret')
-    ### extraConfigMap auth details ADDED TO in secret-values.yaml
-    # client-id:
-    # client-secret:
-    # callback-url:
-    # hosted-domain:
-    # login-service:
-    # github-client-id
-    # github-client-secret
+### extraConfigMap auth details ADDED TO in secret-values.yaml
+# client-id:
+# client-secret:
+# callback-url:
+# hosted-domain:
+# login-service:
     extraConfigMap: {}
     ### extraEnv OVERRIDDEN in secret-values.yaml
-    extraEnv: []
+    extraEnv: {}
     # image WRITTEN by ../build.py
     image:
       name: eu.gcr.io/jupyter-se/hub
-      tag: lab-update-02
+      tag: kubespawner-01
     # services:
     #   assistant:
     #     name: assistant
@@ -187,6 +158,8 @@ jupyterhub:
     #     apiToken:
 
   proxy:
+    nodeSelector:
+      node-purpose: core
     ### secretToken OVERRIDDEN in secret-values.yaml
     secretToken: ''
     https:
@@ -197,9 +170,14 @@ jupyterhub:
         contactEmail: ''
       ### hosts OVERRIDDEN in secret-values.yaml
       hosts: []
+    chp:
+      resources:
+        requests:
+          ### cpu MODIFIED from 0.2
+          cpu: 0.15
+          memory: 512Mi
 
 
-  # Google OAuth secrets
   auth:
     type: dummy
     whitelist:
@@ -215,6 +193,7 @@ jupyterhub:
       enabled: true
       ### cryptoKeys OVERRIDDEN in secret-values.yaml
       cryptoKey:
+
 
   singleuser:
     networkTools:
@@ -248,7 +227,7 @@ jupyterhub:
     # image WRITTEN by ../build.py
     image:
       name: eu.gcr.io/jupyter-se/singleuser
-      tag: lab-update-02
+      tag: kubespawner-01
     cpu:
       limit: 2
       ### guarantee MODIFIED from
@@ -262,7 +241,8 @@ jupyterhub:
     ### cmd MODIFIED from jupyterhub-singleuser
     cmd: start
     ### defaultUrl MODIFIED from blank
-    defaultUrl: '/lab'
+    defaultUrl: /lab
+
 
   prePuller:
     hook:
@@ -274,6 +254,7 @@ jupyterhub:
     continuous:
       enabled: true
 
+
   cull:
     enabled: true
     users: false
@@ -281,4 +262,3 @@ jupyterhub:
     timeout: 3600
     ### every MODIFIED from 600
     every: 600
-

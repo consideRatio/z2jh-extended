@@ -203,8 +203,8 @@ kubectl describe nodes
 ## SETUP
 microsoft = oauth.remote_app(
 	'microsoft',
-	consumer_key='98cb4414-51b6-4665-8cfa-3e884e95ed74',
-	consumer_secret='bjuABQF110:-[azpmDHR00]',
+	consumer_key='asd',
+	consumer_secret='asd',
 	request_token_params={'scope': 'offline_access User.Read'},
 	base_url='https://graph.microsoft.com/v1.0/',
 	request_token_url=None,
@@ -216,7 +216,7 @@ microsoft = oauth.remote_app(
 ## RESPONSE
 {  
     '@odata.context':'https://graph.microsoft.com/v1.0/$metadata#users/$entity',
-    'id':'44400c56-b95f-4adb-b014-d9d2221d33c1',
+    'id':'asdfasdf',
     'businessPhones':[],
     'displayName':'Erik Sundell',
     'givenName':'Erik',
