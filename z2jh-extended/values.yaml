@@ -136,6 +136,8 @@ jupyterhub:
         c.MicrosoftOAuthenticator.login_service = z2jh.get_config('custom.login-service')
         email_domain = z2jh.get_config('custom.hosted-domain')
 
+        c.KubeSpawner.common_labels = z2jh.get_config('kubespawner.common-labels')
+
 ### extraConfigMap auth details ADDED TO in secret-values.yaml
 # client-id:
 # client-secret:
@@ -148,7 +150,7 @@ jupyterhub:
     # image WRITTEN by ../build.py
     image:
       name: eu.gcr.io/jupyter-se/hub
-      tag: kubespawner-01
+      tag: image-awaiter-rbac-pr-02
     # services:
     #   assistant:
     #     name: assistant
@@ -227,7 +229,7 @@ jupyterhub:
     # image WRITTEN by ../build.py
     image:
       name: eu.gcr.io/jupyter-se/singleuser
-      tag: kubespawner-01
+      tag: image-awaiter-rbac-pr-02
     cpu:
       limit: 2
       ### guarantee MODIFIED from
@@ -246,7 +248,7 @@ jupyterhub:
 
   prePuller:
     hook:
-      enabled: false
+      enabled: true
       image:
         name: jupyterhub/k8s-image-awaiter
         # tag MODIFIED manually, picking latest tag from https://hub.docker.com/r/jupyterhub/k8s-image-awaiter/tags/

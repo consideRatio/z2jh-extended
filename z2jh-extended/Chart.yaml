@@ -1,6 +1,6 @@
 description: An extended Zero-to-JupyterHub-K8s installation.
 name: z2jh-extended
-version: kubespawner-01
+version: image-awaiter-rbac-pr-02
 sources:
   - https://github.com/consideRatio/z2jh-extended
 maintainers:
