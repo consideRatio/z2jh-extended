@@ -4,68 +4,14 @@
 # Helm documentation regarding overriding a subcharts values
 # https://docs.helm.sh/chart_template_guide/#overriding-values-from-a-parent-chart
 
-# Internal JupyterHub service
-# http://jupyterhub.readthedocs.io/en/latest/reference/services.html
-# RELATED:
-#   assistant.py in the extended hub image
-#   values.yaml: 
-#     assistant
-#     jupyterhub.hub.extraConfig
-#     jupyterhub.hub.extraConfigMap
-# assistant:
-#   # NOTE: needs to be set in the extraConfigMap as well
-#   enabled: true
-
-# External service instead?
-assistant:
-  enabled: false
-  image:
-    name: eu.gcr.io/jupyter-se/assistant
-    tag: autoscaling-01
-  storage: 1Gi
-  resources:
-    requests:
-      cpu: 0.1
-      memory: 100Mi
-
-nfsServer:
-  enabled: false
-  image:
-    name: eu.gcr.io/jupyter-se/nfs-server
-    tag: 9c0fdaf
-  storage: 10Gi
-  resources:
-    requests:
-      cpu: 1
-      memory: 2Gi
-
 # JupyterHub subchart override
 jupyterhub:
   hub:
-    nodeSelector:
-      node-purpose: core
+    nodeSelector: {}
     ### cookieSecret OVERRIDDEN in secret-values.yaml
     cookieSecret:
     ### extraConfig MODIFIED
     extraConfig:
-      # assistant: |
-        # import os
-        # import z2jh
-        # -----------------------------------------------------------------------
-        # assistant hub EXTERNAL service
-        # it seems like jupyterhub's ip routing cant handle k8s complexity
-        # http://jupyterhub.readthedocs.io/en/latest/reference/services.html
-        # -----------------------------------------------------------------------
-        # import socket
-        # pod_ip = socket.gethostbyname(socket.gethostname())
-        # service_ip = os.environ["HUB_SERVICE_HOST"]
-        #
-        # if z2jh.get_config('custom.assistant.enabled', False):
-        #   c.JupyterHub.services.append({
-        #       'name': 'assistant',
-        #       'url': 'http://assistant.prod.svc.cluster.local:80'.format(pod_ip),
-        #   })
-        # -----------------------------------------------------------------------
       auth: |
         import z2jh
 
@@ -111,8 +57,8 @@ jupyterhub:
 
                 # LABELS
                 # c.KubeSpawner.singleuser_extra_labels = z2jh.get_config('singleuser.extra-labels', {})
-                spawner.singleuser_extra_labels['edu-role'] = edu_role
-                spawner.user_storage_extra_labels['edu-role'] = edu_role
+                spawner.extra_labels['edu-role'] = edu_role
+                spawner.storage_extra_labels['edu-role'] = edu_role
 
 
                 # HOOKS
@@ -150,18 +96,10 @@ jupyterhub:
     # image WRITTEN by ../build.py
     image:
       name: eu.gcr.io/jupyter-se/hub
-      tag: image-awaiter-rbac-pr-02
-    # services:
-    #   assistant:
-    #     name: assistant
-    #     # FIXME: the namespace (prod) is hardcoded!
-    #     url: http://assistant.prod.svc.cluster.local
-    #     ### apiToken  OVERRIDDEN in secret-values.yaml
-    #     apiToken:
+      tag: canary-008
 
   proxy:
-    nodeSelector:
-      node-purpose: core
+    nodeSelector: {}
     ### secretToken OVERRIDDEN in secret-values.yaml
     secretToken: ''
     https:
@@ -176,7 +114,7 @@ jupyterhub:
       resources:
         requests:
           ### cpu MODIFIED from 0.2
-          cpu: 0.15
+          cpu: 100m
           memory: 512Mi
 
 
@@ -202,7 +140,7 @@ jupyterhub:
       image:
         # tag MODIFIED manually, picking latest tag from https://hub.docker.com/r/jupyterhub/k8s-network-tools/tags/
         name: jupyterhub/k8s-network-tools
-        tag: 81c2613
+        tag: 36a8dcb
     # schedulerStrategy MODIFIED from default blank (defaults to 'spread')
     schedulerStrategy: pack
     storage:
@@ -229,7 +167,7 @@ jupyterhub:
     # image WRITTEN by ../build.py
     image:
       name: eu.gcr.io/jupyter-se/singleuser
-      tag: image-awaiter-rbac-pr-02
+      tag: canary-008
     cpu:
       limit: 2
       ### guarantee MODIFIED from
@@ -254,7 +192,7 @@ jupyterhub:
         # tag MODIFIED manually, picking latest tag from https://hub.docker.com/r/jupyterhub/k8s-image-awaiter/tags/
         tag: 01eac78
     continuous:
-      enabled: true
+      enabled: false
 
 
   cull:
@@ -264,3 +202,74 @@ jupyterhub:
     timeout: 3600
     ### every MODIFIED from 600
     every: 600
+
+
+
+
+
+### EXPERIMENTAL STUFF NOT IN USE
+# -------------------------------
+
+# from extra config...
+# assistant: |
+  # import os
+  # import z2jh
+  # -----------------------------------------------------------------------
+  # assistant hub EXTERNAL service
+  # it seems like jupyterhub's ip routing cant handle k8s complexity
+  # http://jupyterhub.readthedocs.io/en/latest/reference/services.html
+  # -----------------------------------------------------------------------
+  # import socket
+  # pod_ip = socket.gethostbyname(socket.gethostname())
+  # service_ip = os.environ["HUB_SERVICE_HOST"]
+  #
+  # if z2jh.get_config('custom.assistant.enabled', False):
+  #   c.JupyterHub.services.append({
+  #       'name': 'assistant',
+  #       'url': 'http://assistant.prod.svc.cluster.local:80'.format(pod_ip),
+  #   })
+        # -----------------------------------------------------------------------
+
+
+# Internal JupyterHub service
+# http://jupyterhub.readthedocs.io/en/latest/reference/services.html
+# RELATED:
+#   assistant.py in the extended hub image
+#   values.yaml: 
+#     assistant
+#     jupyterhub.hub.extraConfig
+#     jupyterhub.hub.extraConfigMap
+# assistant:
+#   # NOTE: needs to be set in the extraConfigMap as well
+#   enabled: true
+
+  # services:
+  #   assistant:
+  #     name: assistant
+  #     # FIXME: the namespace (prod) is hardcoded!
+  #     url: http://assistant.prod.svc.cluster.local
+  #     ### apiToken  OVERRIDDEN in secret-values.yaml
+  #     apiToken:
+
+# External service instead?
+assistant:
+  enabled: false
+  image:
+    name: eu.gcr.io/jupyter-se/assistant
+    tag: autoscaling-01
+  storage: 1Gi
+  resources:
+    requests:
+      cpu: 100m
+      memory: 100Mi
+
+nfsServer:
+  enabled: false
+  image:
+    name: eu.gcr.io/jupyter-se/nfs-server
+    tag: 9c0fdaf
+  storage: 10Gi
+  resources:
+    requests:
+      cpu: 1000m
+      memory: 2Gi

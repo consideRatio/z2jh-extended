@@ -80,14 +80,9 @@ def build_images(prefix, images, tag=None, commit_range=None, push=False):
         build_image(image_path, image_spec, build_args)
 
         if push:
-            if prefix.find('gcr.io') >= 0:
-                subprocess.check_call([
-                    'gcloud', 'docker', '--', 'push', image_spec
-                ])
-            else:
-                subprocess.check_call([
-                    'docker', 'push', image_spec
-                ])
+            subprocess.check_call([
+                'docker', 'push', image_spec
+            ])
 
     return value_modifications
 
@@ -129,19 +124,22 @@ def build_chart(name, paths=None, version=None):
         yaml.dump(chart, f)
 
 
-def deploy(chart, release):
+def deploy(chart, release, force):
     # Set up helm!
     subprocess.check_call(['helm', 'init', '--client-only'])
     subprocess.check_call(['helm', 'dep', 'update'], cwd='z2jh-extended')
 
-    subprocess.check_call([
+    params = [
         'helm', 'upgrade', release,
         '--wait', '--timeout', '1800',
         '--install',
         '--namespace', release,
         '--values', 'z2jh-extended/secret-values.yaml',
-        'z2jh-extended/'
-    ])
+    ]
+    if force:
+        params.append('--force')
+    params.append('z2jh-extended/')
+    subprocess.check_call(params)
 
 
 def main():
@@ -155,6 +153,8 @@ def main():
     argparser.add_argument('--release', default='prod', help='A Helm release name and k8s namespace for a deployment')
     argparser.add_argument('--tag', default=None, help='Use this tag for images & charts')
     argparser.add_argument('--commit-range', help='Range of commits to consider when building images')
+    argparser.add_argument('--force', action='store_true', help='Pass the force flag to the helm upgrade command')
+
 
     args = argparser.parse_args()
 
@@ -164,7 +164,7 @@ def main():
         chart_paths = ['.'] + chart.get('paths', [])
         build_chart(chart['name'], paths=chart_paths, version=args.tag)
         if args.deploy:
-            deploy(chart['name'], args.release)
+            deploy(chart['name'], args.release, force=args.force)
 
 
 main()

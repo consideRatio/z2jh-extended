@@ -6,14 +6,8 @@ charts:
       hub:
         imageValuesPath: jupyterhub.hub.image
         buildArgs:
-          JUPYTERHUB_VERSION: 0.8.1
+          JUPYTERHUB_VERSION: 0.9.0b3
       singleuser:
         imageValuesPath: jupyterhub.singleuser.image
         buildArgs:
-          JUPYTERHUB_VERSION: 0.8.1
-      # image-awaiter:
-      #   imageValuesPath: jupyterhub.prePuller.hook.image
-      # nfs-server:
-      #   imageValuesPath: nfsServer.image
-      # assistant:
-      #   imageValuesPath: assistant.image
+          JUPYTERHUB_VERSION: 0.9.0b3

@@ -3,4 +3,4 @@ dependencies:
   repository: file://../z2jh/jupyterhub
   version: v0.7-dev
 digest: sha256:4aacead7823d976c6a060ed949b914ff29da4830b37a755dd81452d54d55a5c0
-generated: 2018-04-01T03:34:17.505840396+02:00
+generated: 2018-06-06T18:59:26.475418175+02:00
