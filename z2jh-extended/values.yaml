@@ -13,7 +13,7 @@ jupyterhub:
     ### extraConfig MODIFIED
     extraConfig:
       auth: |
-        import z2jh
+        from z2jh import get_config, get_secret, set_config_if_not_none
 
         # Auth
         from oauthenticator.microsoft import MicrosoftOAuthenticator
@@ -56,7 +56,7 @@ jupyterhub:
 
 
                 # LABELS
-                # c.KubeSpawner.singleuser_extra_labels = z2jh.get_config('singleuser.extra-labels', {})
+                # c.KubeSpawner.extra_labels = get_config('singleuser.extra-labels', {})
                 spawner.extra_labels['edu-role'] = edu_role
                 spawner.storage_extra_labels['edu-role'] = edu_role
 
@@ -64,7 +64,7 @@ jupyterhub:
                 # HOOKS
                 # These hooks can run before, during or after the docker image entrypoint
                 # https://github.com/jupyterhub/kubespawner/blob/master/kubespawner/spawner.py#L613
-                # spawner.singleuser_lifecycle_hooks = {
+                # spawner.lifecycle_hooks = {
                 #   'postStart': {
                 #     'exec': {
                 #       'command': ['/bin/sh', '-c', 'echo Hello Im $(whoami) from the postStart handler > /home/jovyan/message']
@@ -75,14 +75,15 @@ jupyterhub:
 
         c.JupyterHub.authenticator_class = LearnetAuthenticator
         # Import auth-information from extraConfigMap set in secret-values.yaml
-        c.MicrosoftOAuthenticator.client_id = z2jh.get_config('custom.client-id')
-        c.MicrosoftOAuthenticator.client_secret = z2jh.get_config('custom.client-secret')
-        c.MicrosoftOAuthenticator.oauth_callback_url = z2jh.get_config('custom.callback-url')
-        c.MicrosoftOAuthenticator.hosted_domain = z2jh.get_config('custom.hosted-domain')
-        c.MicrosoftOAuthenticator.login_service = z2jh.get_config('custom.login-service')
-        email_domain = z2jh.get_config('custom.hosted-domain')
+        c.MicrosoftOAuthenticator.client_id = get_config('custom.client-id')
+        c.MicrosoftOAuthenticator.client_secret = get_config('custom.client-secret')
+        c.MicrosoftOAuthenticator.oauth_callback_url = get_config('custom.callback-url')
+        c.MicrosoftOAuthenticator.hosted_domain = get_config('custom.hosted-domain')
+        c.MicrosoftOAuthenticator.login_service = get_config('custom.login-service')
+        email_domain = get_config('custom.hosted-domain')
 
-        c.KubeSpawner.common_labels = z2jh.get_config('kubespawner.common-labels')
+        # c.KubeSpawner.extra_pod_config.update(get_config('scheduling.singleuser-tolerations'))
+        # c.KubeSpawner.extra_pod_config.update(get_config('scheduling.singleuser-affinity'))
 
 ### extraConfigMap auth details ADDED TO in secret-values.yaml
 # client-id:
@@ -96,7 +97,7 @@ jupyterhub:
     # image WRITTEN by ../build.py
     image:
       name: eu.gcr.io/jupyter-se/hub
-      tag: canary-008
+      tag: canary-019
 
   proxy:
     nodeSelector: {}
@@ -167,7 +168,7 @@ jupyterhub:
     # image WRITTEN by ../build.py
     image:
       name: eu.gcr.io/jupyter-se/singleuser
-      tag: canary-008
+      tag: canary-019
     cpu:
       limit: 2
       ### guarantee MODIFIED from
@@ -186,7 +187,7 @@ jupyterhub:
 
   prePuller:
     hook:
-      enabled: true
+      enabled: false
       image:
         name: jupyterhub/k8s-image-awaiter
         # tag MODIFIED manually, picking latest tag from https://hub.docker.com/r/jupyterhub/k8s-image-awaiter/tags/
@@ -223,7 +224,7 @@ jupyterhub:
   # pod_ip = socket.gethostbyname(socket.gethostname())
   # service_ip = os.environ["HUB_SERVICE_HOST"]
   #
-  # if z2jh.get_config('custom.assistant.enabled', False):
+  # if get_config('custom.assistant.enabled', False):
   #   c.JupyterHub.services.append({
   #       'name': 'assistant',
   #       'url': 'http://assistant.prod.svc.cluster.local:80'.format(pod_ip),

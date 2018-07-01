@@ -124,7 +124,7 @@ def build_chart(name, paths=None, version=None):
         yaml.dump(chart, f)
 
 
-def deploy(chart, release, force):
+def deploy(chart, release, args):
     # Set up helm!
     subprocess.check_call(['helm', 'init', '--client-only'])
     subprocess.check_call(['helm', 'dep', 'update'], cwd='z2jh-extended')
@@ -136,8 +136,12 @@ def deploy(chart, release, force):
         '--namespace', release,
         '--values', 'z2jh-extended/secret-values.yaml',
     ]
-    if force:
+    if args.force:
         params.append('--force')
+    if args.dry_run:
+        params.append('--dry-run')
+    if args.debug:
+        params.append('--debug')
     params.append('z2jh-extended/')
     subprocess.check_call(params)
 
@@ -154,7 +158,8 @@ def main():
     argparser.add_argument('--tag', default=None, help='Use this tag for images & charts')
     argparser.add_argument('--commit-range', help='Range of commits to consider when building images')
     argparser.add_argument('--force', action='store_true', help='Pass the force flag to the helm upgrade command')
-
+    argparser.add_argument('--debug', action='store_true', help='Pass the debug flag to the helm upgrade command')
+    argparser.add_argument('--dry-run', action='store_true', help='Pass the dry-run flag to the helm upgrade command')
 
     args = argparser.parse_args()
 
@@ -164,7 +169,7 @@ def main():
         chart_paths = ['.'] + chart.get('paths', [])
         build_chart(chart['name'], paths=chart_paths, version=args.tag)
         if args.deploy:
-            deploy(chart['name'], args.release, force=args.force)
+            deploy(chart['name'], args.release, args=args)
 
 
 main()
