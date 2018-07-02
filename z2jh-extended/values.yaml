@@ -97,7 +97,7 @@ jupyterhub:
     # image WRITTEN by ../build.py
     image:
       name: eu.gcr.io/jupyter-se/hub
-      tag: canary-019
+      tag: canary-020
 
   proxy:
     nodeSelector: {}
@@ -168,7 +168,7 @@ jupyterhub:
     # image WRITTEN by ../build.py
     image:
       name: eu.gcr.io/jupyter-se/singleuser
-      tag: canary-019
+      tag: canary-020
     cpu:
       limit: 2
       ### guarantee MODIFIED from

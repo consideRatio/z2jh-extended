@@ -24,11 +24,8 @@ PriorityClass + priorityClassName
 
 # PLACEHOLDER PODS
 # Should be USER PODS + 
-priorityClassName: jupyterhub-placeholder-priority
+priorityClassName: jupyterhub-user-placeholder-priority
 
-autoscaler done-ish:
-- label (the node pool, in guide)
-- taint (the node pool, in guide)
 
 autoscaler todo:
 - DONE: core stuff should have a preferred core affinity
@@ -42,22 +39,31 @@ autoscaler todo:
 - DONE: fix jupyterhub_config.py fully
 - DONE: schema for placeholder values
 - DONE: schema for user dummy values
-
-- fix hub.jupyter.org_dedicated: https://issuetracker.google.com/issues/77240642 (AWAIT)
-- await kubernetes 1.11 on GKE: https://cloud.google.com/kubernetes-engine/release-notes (AWAIT)
-- fix schedulers namespace workaround: https://github.com/kubernetes/kubernetes/issues/60469 (AWAIT)
-
 - DONE: did not work well... PVC, make the PV remain if PVC is deleted somehow? Deletion policy or similar?
-- add recommendation on securing the PV by adjusting its reclaimpolicy
+- DONE: try -> merge mins kubespawner
+
+- WAIT: ix hub.jupyter.org_dedicated: https://issuetracker.google.com/issues/77240642 (AWAIT)
+- WAIT: await kubernetes 1.11 on GKE: https://cloud.google.com/kubernetes-engine/release-notes (AWAIT)
+- WAIT: fix schedulers namespace workaround: https://github.com/kubernetes/kubernetes/issues/60469 (AWAIT)
 
 
-- rename placeholder to user-placeholder
+- Allow setting tolerations
+    - PR: https://github.com/jupyterhub/kubespawner/pull/171
+- Allow setting affinities 
+    - ISSUE: https://github.com/jupyterhub/kubespawner/issues/200
+- draft-update scheduler to utilize KubeSchedulerConfig api
+- consider adding another culler for placeholder pods
+- make a demo
+    - show pending pods
 - allow adding additional tolerations
+- segment the code to various PRs or at least commits
+
+TODO Documentation:
 - deprecate packing of pods
-- update gcloud guide (adding new pools, removing old, gcloud set zone first)
+- update gcloud guide (adding new pools with labels/taints, removing old, gcloud set zone first)
     - request help for amazon etc
 - update placeholder and user-dummy information
-
+- add recommendation on securing the PV by adjusting its reclaimpolicy
 - changelog
 
 
@@ -138,10 +144,15 @@ kubectl patch deployment user-dummy --patch '{"spec": {"replicas": 0}}'
 
 
 
---- The pending pods
---- The user node watcher expression
-watch -t -n 0,5 'echo "  # The user nodes and their pods"; echo; kubectl describe node --selector=hub.jupyter.org/n
-ode-purpose=user | grep -E "placeholder|user-dummy|Namespace"'
+--- User nodes
+watch -t -n 0.5 'echo "# User nodes"; echo; kubectl get nodes --selector hub.jupyter.org/node-purpose=user;
+
+--- Pending pods
+watch -t -n 0.5 'tput setaf 3; echo "# Pending pods"; echo; kubectl get pods --field-selector=status.phase=Pending'
+
+--- Scheduled pods
+watch -t -n 0.5 'tput setaf 2; echo "# Scheduled pods"; echo; kubectl describe node --selector=hub.jupyter.org/node-purpose=user | grep -E "user-placeholder|user-d
+ummy|Namespace"'
 
 watch -t 'printf "# A DEMO OF: kube-scheduler, cluster autoscaler, pod-priority
 
@@ -194,3 +205,5 @@ GOOD:
 
 THOUGHTS:
 - Placeholder pods wasn't preempted when real users had room on another node
+- The culler shut down the placeholder pods and the user dummies
+    WHY?! They didn't have a singleuser label or similar.
