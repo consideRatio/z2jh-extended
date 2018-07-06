@@ -47,10 +47,8 @@ autoscaler todo:
 - WAIT: fix schedulers namespace workaround: https://github.com/kubernetes/kubernetes/issues/60469 (AWAIT)
 
 
-- Allow setting tolerations
-    - PR: https://github.com/jupyterhub/kubespawner/pull/171
-- Allow setting affinities 
-    - ISSUE: https://github.com/jupyterhub/kubespawner/issues/200
+- Allow setting tolerations and affinities
+    - PR: https://github.com/jupyterhub/kubespawner/pull/205
 - draft-update scheduler to utilize KubeSchedulerConfig api
 - consider adding another culler for placeholder pods
 - make a demo

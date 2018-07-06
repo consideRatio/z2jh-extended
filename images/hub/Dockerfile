@@ -10,7 +10,7 @@ RUN apt-get install --yes --no-install-recommends \
     vim
 
 RUN pip3 install --upgrade \
-    https://github.com/minrk/kubespawner/archive/deprecate-config.zip
+    https://github.com/consideratio/kubespawner/archive/tolerations-pr.zip
 
 COPY temp_jupyterhub_config.py /srv/jupyterhub_config.py
 

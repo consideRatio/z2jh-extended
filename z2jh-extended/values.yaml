@@ -97,7 +97,7 @@ jupyterhub:
     # image WRITTEN by ../build.py
     image:
       name: eu.gcr.io/jupyter-se/hub
-      tag: canary-020
+      tag: canary-022
 
   proxy:
     nodeSelector: {}
@@ -168,7 +168,7 @@ jupyterhub:
     # image WRITTEN by ../build.py
     image:
       name: eu.gcr.io/jupyter-se/singleuser
-      tag: canary-020
+      tag: canary-022
     cpu:
       limit: 2
       ### guarantee MODIFIED from
@@ -187,13 +187,13 @@ jupyterhub:
 
   prePuller:
     hook:
-      enabled: false
+      enabled: true
       image:
         name: jupyterhub/k8s-image-awaiter
         # tag MODIFIED manually, picking latest tag from https://hub.docker.com/r/jupyterhub/k8s-image-awaiter/tags/
         tag: 01eac78
     continuous:
-      enabled: false
+      enabled: true
 
 
   cull:
