@@ -86,9 +86,13 @@ cmd = get_config('singleuser.cmd', None)
 if cmd:
     c.Spawner.cmd = cmd
 
-c.KubeSpawner.extra_pod_config = {}
-c.KubeSpawner.extra_pod_config.update(get_config('scheduling.singleuser-tolerations'))
-c.KubeSpawner.extra_pod_config.update(get_config('scheduling.singleuser-affinity'))
+c.KubeSpawner.tolerations.extend(get_config('singleuser.tolerations-list', []))
+c.KubeSpawner.node_affinity_required.extend(get_config('singleuser.node-affinity-required', []))
+c.KubeSpawner.node_affinity_preferred.extend(get_config('singleuser.node-affinity-preferred', []))
+c.KubeSpawner.pod_affinity_required.extend(get_config('singleuser.pod-affinity-required', []))
+c.KubeSpawner.pod_affinity_preferred.extend(get_config('singleuser.pod-affinity-preferred', []))
+c.KubeSpawner.pod_anti_affinity_required.extend(get_config('singleuser.pod-anti-affinity-required', []))
+c.KubeSpawner.pod_anti_affinity_preferred.extend(get_config('singleuser.pod-anti-affinity-preferred', []))
 
 lifecycle_hooks = get_config('singleuser.lifecycle-hooks')
 if lifecycle_hooks:

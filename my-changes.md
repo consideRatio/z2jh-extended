@@ -9,6 +9,9 @@ hub/proxy pod affinities replaced with node affinities
 labeling update for easier pod affinity
 podculler integrated into jupyterhub
 podculler maxAge bugfix
+bump kubespawner
+extraTolerations supported
+extra...Affinity supported
 
 
 VERIFICATION:
@@ -33,7 +36,7 @@ autoscaler todo:
 - DONE: fix schedulers rbac:  https://kubernetes.slack.com/messages/C09TP78DV/ (AWAIT)
   - https://github.com/kubernetes/kubernetes/blob/master/plugin/pkg/auth/authorizer/rbac/bootstrappolicy/testdata/cluster-roles.yaml
 - DONE: fix PriorityClass installation: https://github.com/kubernetes/helm/issues/4277 (AWAIT)
-- DONE: decide on required / prefered node affinity for the user pods (preferred / preferred but configurable)
+- DONE: decide on required / preferred node affinity for the user pods (preferred / preferred but configurable)
 - DONE: change pod-kind to pod-kind?
 - DONE: antipodaffinity on node schedulers
 - DONE: fix jupyterhub_config.py fully
@@ -41,20 +44,22 @@ autoscaler todo:
 - DONE: schema for user dummy values
 - DONE: did not work well... PVC, make the PV remain if PVC is deleted somehow? Deletion policy or similar?
 - DONE: try -> merge mins kubespawner
-
-- WAIT: ix hub.jupyter.org_dedicated: https://issuetracker.google.com/issues/77240642 (AWAIT)
-- WAIT: await kubernetes 1.11 on GKE: https://cloud.google.com/kubernetes-engine/release-notes (AWAIT)
-- WAIT: fix schedulers namespace workaround: https://github.com/kubernetes/kubernetes/issues/60469 (AWAIT)
-
-
-- Allow setting tolerations and affinities
+- DONE: Allow setting tolerations and affinities
     - PR: https://github.com/jupyterhub/kubespawner/pull/205
-- draft-update scheduler to utilize KubeSchedulerConfig api
-- consider adding another culler for placeholder pods
+- DONE: allow adding additional tolerations
+- DONE: allow adding additional affinities
+- DONE: fix schedulers namespace workaround (what did i do?): https://github.com/kubernetes/kubernetes/issues/60469 (AWAIT)
+- DONE: update schemas
+
+- WAIT: hub.jupyter.org_dedicated: https://issuetracker.google.com/issues/77240642
+- WAIT: await kubernetes 1.11 on GKE: https://cloud.google.com/kubernetes-engine/release-notes
+- WAIT: Update kube-scheduler to 1.11 again https://console.cloud.google.com/gcr/images/google-containers/GLOBAL/kube-scheduler-amd64
+
+
+- segment the code to various PRs or at least commits
 - make a demo
     - show pending pods
-- allow adding additional tolerations
-- segment the code to various PRs or at least commits
+- draft-update scheduler to utilize KubeSchedulerConfig api
 
 TODO Documentation:
 - deprecate packing of pods
@@ -64,7 +69,8 @@ TODO Documentation:
 - add recommendation on securing the PV by adjusting its reclaimpolicy
 - changelog
 
-
+FUTURE
+- consider adding another culler for placeholder pods
 
 # placeholder / user-dummy
 kubectl patch deployment placeholder --patch '{"spec": {"replicas": 0}}'
@@ -122,7 +128,6 @@ gcloud beta container node-pools create user-pool \
 
 Demonstration
 
-
 1. Add 4 placeholders
 kubectl patch deployment placeholder --patch '{"spec": {"replicas": 4}}'
 2. Add 4 dummy-users
@@ -143,16 +148,19 @@ kubectl patch deployment user-dummy --patch '{"spec": {"replicas": 0}}'
 
 
 --- User nodes
-watch -t -n 0.5 'echo "# User nodes"; echo; kubectl get nodes --selector hub.jupyter.org/node-purpose=user;
+watch -t -n 0.5 'echo "# User nodes"; echo; kubectl get nodes --selector hub.jupyter.org/node-purpose=user | cut -c 1-55'
 
 --- Pending pods
-watch -t -n 0.5 'tput setaf 3; echo "# Pending pods"; echo; kubectl get pods --field-selector=status.phase=Pending'
+watch -t -n 0.5 'tput setaf 3; echo "# Pending pods"; echo; kubectl get pods --field-selector=status.phase=Pending | cut -c 1-53'
 
 --- Scheduled pods
 watch -t -n 0.5 'tput setaf 2; echo "# Scheduled pods"; echo; kubectl describe node --selector=hub.jupyter.org/node-purpose=user | grep -E "user-placeholder|user-d
-ummy|Namespace"'
+ummy|Namespace" | cut -c 1-56'
 
 watch -t 'printf "# A DEMO OF: kube-scheduler, cluster autoscaler, pod-priority
+
+--- CA
+watch -n 0.5 -t 'echo "# Cluster Autoscaler status"; echo; kubectl get cm -n kube-system cluster-autoscaler-status -o yaml | grep gke-test -A 6 | cut -c 6-58'
 
 1. Adding 4 placeholder pods  --- CA scale up
 2. Adding 4 dummy-user pods   --- 1 node full (max 8 pods)
@@ -163,34 +171,20 @@ watch -t 'printf "# A DEMO OF: kube-scheduler, cluster autoscaler, pod-priority
 7. Adding 20 dummy-user pods  --- CA adds two more nodes
 8. Removing all dummy-users   --- CA scale down (~10 min delay)"'
 
-watch -t "printf 'A demonstration of:
-- cluster autoscaling
-- pod eviction using pod-priority
-- pod packing using kube-scheduler
+watch -t "tput setaf 7; printf '# A demonstration of:
 
-Details
-- Each node fits 8 pods
-- Placeholders have lowest priority
+# Details
+1. Placeholders get evicted (Max 4 per node)
+2. Pending pods triggers scale up
+3. Scheduler packs pods tight
 
-The demo
-1. Add 4 placeholders
-2. Add 4 dummy-users
-3. Add to 8 dummy-users
-4. Remove to 0 dummy-users
-5. Add to 4 dummy-users
-6. Add to 8 dummy-users
-7. Add to 28 dummy-users
-8. Remove all dummy-users
-
----
-
-I am @consideRatio at GitHub
-
-Made for the Zero-to-JupyterHub-k8s
-guide / github repo:
+# About
 - z2jh.jupyter.org
 - github.com/jupyterhub/zero-to-jupyterhub-k8s
-'"
+
+# Made by
+@consideRatio / Erik Sundell'"
+
 
 
 
