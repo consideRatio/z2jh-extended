@@ -50,6 +50,7 @@ autoscaler todo:
 - DONE: allow adding additional affinities
 - DONE: fix schedulers namespace workaround (what did i do?): https://github.com/kubernetes/kubernetes/issues/60469 (AWAIT)
 - DONE: update schemas
+- DONE: make a demo
 
 - WAIT: hub.jupyter.org_dedicated: https://issuetracker.google.com/issues/77240642
 - WAIT: await kubernetes 1.11 on GKE: https://cloud.google.com/kubernetes-engine/release-notes
@@ -57,8 +58,6 @@ autoscaler todo:
 
 
 - segment the code to various PRs or at least commits
-- make a demo
-    - show pending pods
 - draft-update scheduler to utilize KubeSchedulerConfig api
 
 TODO Documentation:
