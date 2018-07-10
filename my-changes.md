@@ -1,54 +1,72 @@
-- Pod Culler is now a jupyterhub service
+- DONE: Pod Culler is now a jupyterhub service
 
 Since JupyterHub 0.9 the pod culler is integrated as a jupyterhub service instead of being deployed as a pod with associated container image.
 
-- Values.yaml: cull.maxAge bug fixed
+- DONE: Values.yaml: cull.maxAge bug fixed
 
 The value cull.maxAge was previously never consumed by the jupyterhub_config.py as it reads from its configmap where the entry cull.max-age was never set. This affected maxAge based cullings on JupyterHub 0.9+.
 
-- Bumping pause image
-
-In order to keep up to date, bumping the pause image container to 3.1.
-
-- Remove `schedulerStrategy: pack | spread`
+- DONE: Remove `schedulerStrategy: pack | spread`
 
 This was a half measure solution in order to pack user pods on nodes for better cluster autoscaling. The to be implemented custom scheduler will allow actual packing of user pods while this option that enables a preferred pod affinty made pods schedule on a nodes one or more user pod on it already.
 
-For example, consider having three nodes: one empty node and two nodes with one user pod on them. A custom user scheduler could schedule five additional user pods to the same node by looking how much resoureces were requested, but simply adding a user pod affinity would only ensure that new pods are scheduled on one of the two nodes with one or more user pod on it.
+For example, consider having three nodes: one empty node and two nodes with one user pod on them. A custom user scheduler could schedule five additional user pods to the same node by looking how much resoureces were requested, but simply adding a user pod affinity would only ensure that new pods are scheduled on one of the two nodes with one or more user pod on it. This option is overpromising things, let us not mislead the users and direct them towards a custom scheduler instead.
 
-- Image-puller's made robost (Helm 2.9+)
+- DONE: Bumping pause image
 
-The hook based puller ensures user images are pulled to the nodes before an upgrade of the hub takes place. This is helpful as if not this is done, users would potentially be spawned on nodes without the user image available.
+In order to keep up to date, bumping the pause image container to 3.1.
 
-Due to a bug in Helm related to the annotation `helm.sh/hook-delete-policy: hook-failed`, multiple puller instances tended to accumulate. In this commit the deletion policy `before-hook-creation` is added allowng a pre-existing k8s resource with the same name to be deleted before helm trist to create it that would normally cause an error. This ensures that max one pre-install/upgrade hook puller would remain on install/upgrade failures. It would also ensure that single resource is cleaned up on the next successfull helm installation or upgrade.
+- DONE: Upgrade various resource APIs (K8s 1.9+)
 
-- Added `hub.jupyter.org/storage-kind: user | core` labels to PVC's
+Keeping up with the kubernetes API development, the new API requires k8s 1.9+.
 
-Allows administrator to find the
+For more information see: https://v1-8.docs.kubernetes.io/docs/reference/workloads-18-19/
 
-NOTE: this change is safe to make without loosing the PVCs dynamically provisioned volume, but it will not influence already the PVCs already created by kubespawner
+- DONE: Image-puller's made robost (Helm 2.9+)
 
-- Added `hub.jupyter.org/pod-kind: user | core` labels to storage Pods
+The hook based puller ensures user images are pulled to the nodes before an upgrade of the hub takes place. This is helpful as if this wouldn't be done, users would potentially be spawned on nodes without the user image available forcing them to wait up to minutes. The users would probably think something was wrong and shut down ahead of time.
+
+To complement this pre-upgrade / pre-install hook based image puller, the continuous puller will pull images to all nodes right when they are created, for example by a cluster autoscaler. The continuous image puller is now enabled by default as it is very useful for the cluster autoscaling used in conjunction with user placehodlers that is creating headroom.
+
+Due to a bug in Helm related to the annotation `helm.sh/hook-delete-policy: hook-failed`, multiple puller instances tended to accumulate. In this commit the deletion policy `before-hook-creation` enters our code base (Helm 2.9+) and allows for a pre-existing k8s resource with the same name to be deleted before helm tries to create it. Without this Helm would raise an "... already exist" error. This also ensures that max one pre-install/upgrade hook puller would remain on install/upgrade failures. It also ensures that this single resource as well is cleaned up on the next successfull helm installation or upgrade.
+
+- DONE: Added `hub.jupyter.org/storage-kind: user | core` labels to PVC's
+
+Thanks to this label, an administrator would be able to select only the user storage for example.
+
+NOTE: this change is safe to make without loosing the PVCs dynamically provisioned volume, but it will not influence already the PVCs already created by kubespawner.
+
+- DONE: Added `hub.jupyter.org/pod-kind: user | core` labels to Pods
 
 Allows for easier affinity rules and pod selection queries.
 
-- Added the node affinity option `matchNodePurpose`
+- DONE: Added the node affinity option `matchNodePurpose`
 
  With a dedicated node pool for core pods and user pods, we can with this option `prefer` or `require` that the pod's `hub.jupyter.org/pod-kind` value matches the nodes `hub.jupyter.org/node-purpose` value.
 
-- Added support for configuring `extraTolerations` and `extra...Affinity`
+ Additional parts in next commit...
+
+- DONE: Added support for configuring `extraTolerations` and `extra...Affinity`
 
 For use with the kubespawner features introduced in https://github.com/jupyterhub/kubespawner/pull/205.
 
-- Added user-scheduler to schedule user pods
+- DONE: Added a template helper for resource requests/limits
 
-By adding a custom user scheduler, we can declare that our user pods should schedule with a different kind of logic. For cluster autoscaling purposes it is great to pack the user pods tight and that is exactly what this custom user pod scheduler will do.
+Ensures we avoid code duplication in the future when introducing user-placeholder and user-dummy along with real user pods.
 
-- Added PodPriority support (K8s 1.11+)
+- DONE: Added user-scheduler to schedule user pods
+
+By adding a custom user scheduler, we can declare that our user pods should schedule with a different kind of logic. For cluster autoscaling purposes it is great to pack the user pods tight and that is exactly what this custom user pod scheduler will accomplish.
+
+- DONE: Removed outdated pod affinity attempts
+
+Previous attempts to make core pods stick to one node failed. The pod affinity on the hub and proxy pods probably only ended up giving a false sense of making the core pods stick to one node while they in reality end up on various nodes. By using node affinity to the `hub.jupyter.org/node-purpose` node label instead, we will accomplish a much more robust solution.
+
+- DONE: Added PodPriority support (K8s 1.11+)
 
 PodPriority allows pods with lower priority to be evicted by pods with higher priority. This can be utilized in conjunction with user placeholder pods to create a headroom on nodes and allow themselves to be evicted by real user pods if needed.
 
-- Added user-placeholder deployment
+- DONE: Added user-placeholder deployment (Soft req: PodPriority)
 
 To be used in conjuction with PodPriority and a cluster autoscaler in order to create headroom for real users. The placeholder pods are supposed to be evicted when the node resources are needed by a real user. When they get evicted and end up Pending they will make a cluster autoscaler scale up if possible.
 
@@ -57,14 +75,22 @@ To be used in conjuction with PodPriority and a cluster autoscaler in order to c
 kubectl patch deployment user-placeholder --patch '{"spec": {"replicas": 4}}'
 ```
 
-- Added user-dummy deployment
+- DONE: Added user-dummy deployment
 
-To be used with the user-scheduler, PodPriority, user-placeholders and a cluster autoscaler in order to test how the system behaves. A user-dummy should simulate a real user that is having the same affinities and PodPriority as a real user. The benefit of this deployment is that you can control the amount of user-dummy's easy, for example by writing...
+To be used with the user-scheduler, PodPriority, user-placeholders and a cluster autoscaler in order to test how the system behaves. A user-dummy should simulate a real user, so it is configured to have the same affinities and PodPriority as a real user. The benefit of this deployment is that you can control the amount of user-dummy's very qickly as compared to awaiting users for testing.
 
 ```shell
 # In order to scale the user dummies dynamically...
 kubectl patch deployment user-dummy --patch '{"spec": {"replicas": 4}}'
 ```
+
+- Updated tools/lint.py to support K8s <=1.11
+
+`kubeval` requires schemas for the K8s API, as they were not available in the default kubeval repo I pointed towards my repo for now at https://github.com/consideRatio/kubernetes-json-schema for now until the PR I made to update the default repo is accepted.
+
+- jupyterhub_config.py refreshed for readability
+
+Nothing fancy, just made it easier to read through by grouping related configurations and being consistent in the use of configmap instead of using environment variables (`singleuser.image-spec`).
 
 
 IDEA:
