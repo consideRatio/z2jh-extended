@@ -84,13 +84,27 @@ To be used with the user-scheduler, PodPriority, user-placeholders and a cluster
 kubectl patch deployment user-dummy --patch '{"spec": {"replicas": 4}}'
 ```
 
-- Updated tools/lint.py to support K8s <=1.11
+- DONE: Updated tools/lint.py to support K8s <=1.11
 
-`kubeval` requires schemas for the K8s API, as they were not available in the default kubeval repo I pointed towards my repo for now at https://github.com/consideRatio/kubernetes-json-schema for now until the PR I made to update the default repo is accepted.
+`kubeval` requires schemas for the K8s API. These were not available in the default kubeval repo, so while waiting for my PR to be accepted I point towards my repo as a source for the K8s API schemas used by `kubeval` at https://github.com/consideRatio/kubernetes-json-schema
 
-- jupyterhub_config.py refreshed for readability
+- DONE: Consume singleuser.image with hub-config
 
-Nothing fancy, just made it easier to read through by grouping related configurations and being consistent in the use of configmap instead of using environment variables (`singleuser.image-spec`).
+Ensured consisted use of configmap instead of using environment variables for the singleuser image. The new configmap entry is named `singleuser.image-spec`.
+
+- DONE: jupyterhub_config.py refreshed for readability
+
+Nothing fancy, just made it easier to read through by grouping related configurations.
+
+- DONE: Complementary - Allow setting of storage labels
+
+- DONE: Complementary - Pod Culler as a JupyterHub Service
+
+- DONE: Complementary - preferScheduleNextToRealUsers
+
+Consider two nodes, one with two user-placeholder pods and one with two actual users. With this preconfigured affinity option set, the pod will schedule next to the real users which is what you would want in order to accomplish efficient cluster autoscaling.
+
+NOTE: This is recommended for clusters with less than 100 nodes, but since pod affinities are computationally expensive and cause the scheduler to leave new pods in Pending state for seconds upwards if the cluster grows large.
 
 
 IDEA:
