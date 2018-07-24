@@ -122,12 +122,8 @@ taint a node pool
     jupyterhub-dedicated: user
 PriorityClass + priorityClassName
 
-# PLACEHOLDER PODS
-# Should be USER PODS + 
-priorityClassName: jupyterhub-user-placeholder-priority
 
-
-autoscaler todo:
+# autoscaler todo:
 - DONE: core stuff should have a preferred core affinity
 - DONE: user stuff should have a preferred user affinity
 - DONE: fix schedulers rbac:  https://kubernetes.slack.com/messages/C09TP78DV/ (AWAIT)
@@ -154,7 +150,7 @@ autoscaler todo:
 - WAIT: Update kube-scheduler to 1.11 again https://console.cloud.google.com/gcr/images/google-containers/GLOBAL/kube-scheduler-amd64
 
 
-- segment the code to various PRs or at least commits
+- DONE: segment the code to various PRs or at least commits
 - draft-update scheduler to utilize KubeSchedulerConfig api
 
 TODO Documentation:
@@ -180,18 +176,16 @@ kubectl patch deployment user-dummy --patch '{"spec": {"replicas": 0}}'
 kubectl patch configmap --namespace kube-system kube-dns-autoscaler --patch '{"data": {"linear": "{\"coresPerReplica\":256,\"nodesPerReplica\":16,\"preventSinglePointFailure\":false}"}}'
 
 # before creating the cluster
-gcloud config set container/cluster test-cluster-1
+gcloud config set container/cluster alpha-cluster
 gcloud config set compute/zone europe-west3-c
 gcloud config set container/new_scopes_behavior true
 
 # creating the cluster...
-gcloud container clusters create test-cluster-1 \
+gcloud container clusters create alpha-cluster \
 --enable-kubernetes-alpha \
 --cluster-version=latest \
---num-nodes=1
-
-    Hmmm...
---enable-autorepair
+--num-nodes=1 \
+--enable-autorepair \
 --no-enable-cloud-logging \
 --no-enable-cloud-monitoring
 
@@ -244,10 +238,10 @@ kubectl patch deployment user-dummy --patch '{"spec": {"replicas": 0}}'
 
 
 --- User nodes
-watch -t -n 0.5 'echo "# User nodes"; echo; kubectl get nodes --selector hub.jupyter.org/node-purpose=user | cut -c 1-55'
+watch -t -n 0.5 'echo "# User nodes"; echo; kubectl get nodes --selector hub.jupyter.org/node-purpose=user | cut -c 1-56'
 
 --- Pending pods
-watch -t -n 0.5 'tput setaf 3; echo "# Pending pods"; echo; kubectl get pods --field-selector=status.phase=Pending | cut -c 1-53'
+watch -t -n 0.5 'tput setaf 3; echo "# Pending pods"; echo; kubectl get pods --field-selector=status.phase=Pending | cut -c 1-56'
 
 --- Scheduled pods
 watch -t -n 0.5 'tput setaf 2; echo "# Scheduled pods"; echo; kubectl describe node --selector=hub.jupyter.org/node-purpose=user | grep -E "user-placeholder|user-d

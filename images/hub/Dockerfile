@@ -9,7 +9,6 @@ RUN pip3 --no-cache-dir install \
 RUN apt-get install --yes --no-install-recommends \
     vim
 
-RUN echo "reinstall plz"
 RUN pip3 install --upgrade \
     https://github.com/consideratio/kubespawner/archive/tolerations-pr.zip
 

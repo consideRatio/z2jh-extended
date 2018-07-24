@@ -86,18 +86,23 @@ jupyterhub:
         # c.KubeSpawner.extra_pod_config.update(get_config('scheduling.singleuser-affinity'))
 
 ### extraConfigMap auth details ADDED TO in secret-values.yaml
-# client-id:
-# client-secret:
-# callback-url:
-# hosted-domain:
-# login-service:
     extraConfigMap: {}
+    # client-id:
+    # client-secret:
+    # callback-url:
+    # hosted-domain:
+    # login-service:
     ### extraEnv OVERRIDDEN in secret-values.yaml
     extraEnv: {}
     # image WRITTEN by ../build.py
     image:
       name: eu.gcr.io/jupyter-se/hub
-      tag: canary-025
+      tag: canary-032
+    resources:
+      requests:
+        cpu: 100m
+        memory: 512Mi
+
 
   proxy:
     nodeSelector: {}
@@ -168,13 +173,13 @@ jupyterhub:
     # image WRITTEN by ../build.py
     image:
       name: eu.gcr.io/jupyter-se/singleuser
-      tag: canary-025
+      tag: canary-032
     cpu:
       limit: 2
       ### guarantee MODIFIED from
       ### Allows for 6 users on 1 n1-standard-4 google machine
       ### Allows for 8 additional users for every n1-standard-4 google machine
-      guarantee: 0.8
+      guarantee: 800m
     memory:
       limit: 1G
       ### guarantee MODIFIED from 1G
@@ -184,6 +189,27 @@ jupyterhub:
     ### defaultUrl MODIFIED from blank
     defaultUrl: /lab
 
+
+  scheduling:
+    userScheduler:
+      enabled: true
+    podPriority:
+      enabled: true
+    userPlaceholder:
+      enabled: true
+      replicas: 0
+      resources:
+    userDummy:
+      enabled: true
+      replicas: 0
+    corePods:
+      nodeAffinity:
+        matchNodePurpose: require
+    userPods:
+      nodeAffinity:
+        matchNodePurpose: require
+      podAffinity:
+        preferScheduleNextToRealUsers: true
 
   prePuller:
     hook:
