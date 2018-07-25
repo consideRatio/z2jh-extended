@@ -84,7 +84,7 @@ To be used with the user-scheduler, PodPriority, user-placeholders and a cluster
 kubectl patch deployment user-dummy --patch '{"spec": {"replicas": 4}}'
 ```
 
-- DONE: Updated tools/lint.py to support K8s <=1.11
+- DONE: Updated tools/lint-and-validate-templates.py to support K8s <=1.11
 
 `kubeval` requires schemas for the K8s API. These were not available in the default kubeval repo, so while waiting for my PR to be accepted I point towards my repo as a source for the K8s API schemas used by `kubeval` at https://github.com/consideRatio/kubernetes-json-schema
 
