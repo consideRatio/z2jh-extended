@@ -6,8 +6,8 @@ charts:
       hub:
         imageValuesPath: jupyterhub.hub.image
         buildArgs:
-          JUPYTERHUB_VERSION: 0.9.0b3
+          JUPYTERHUB_VERSION: 0.9.*
       singleuser:
         imageValuesPath: jupyterhub.singleuser.image
         buildArgs:
-          JUPYTERHUB_VERSION: 0.9.0b3
+          JUPYTERHUB_VERSION: 0.9.*

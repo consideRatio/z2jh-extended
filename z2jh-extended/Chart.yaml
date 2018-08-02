@@ -1,6 +1,6 @@
 description: An extended Zero-to-JupyterHub-K8s installation.
 name: z2jh-extended
-version: canary-032
+version: canary-109
 sources:
   - https://github.com/consideRatio/z2jh-extended
 maintainers:

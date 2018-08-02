@@ -1,0 +1,111 @@
+FROM jupyter/minimal-notebook:45e010d9e849
+# Build from... https://hub.docker.com/r/jupyter/minimal-notebook/
+#               https://github.com/jupyter/docker-stacks/blob/master/minimal-notebook/Dockerfile
+# Built from... https://hub.docker.com/r/jupyter/base-notebook/
+#               https://github.com/jupyter/docker-stacks/blob/master/base-notebook/Dockerfile
+# Built from... Ubuntu 18.04
+
+ARG JUPYTERHUB_VERSION=0.9.*
+
+# Fundamentals
+# -----------------------------------------------------------------------------
+
+USER root
+RUN apt-get update && \
+    apt-get install --yes --no-install-recommends \
+    curl
+USER ${NB_USER}
+
+RUN pip --no-cache-dir install \
+    jupyterhub==$JUPYTERHUB_VERSION \
+    nteract_on_jupyter
+
+RUN conda install --yes --channel conda-forge \
+    jupyterlab \
+    ipywidgets    
+
+RUN jupyter labextension install @jupyterlab/hub-extension && \
+    jupyter labextension install @jupyter-widgets/jupyterlab-manager
+
+# # R-Studio
+# # -----------------------------------------------------------------------------
+
+# # DOCKERFILE stuff from running
+# # jupyter-repo2docker --debug --no-build https://github.com/binder-examples/r
+
+# ENV APP_BASE /srv
+# ENV VENV_PATH ${APP_BASE}/venv
+# ENV NB_PYTHON_PREFIX ${VENV_PATH}
+# ENV R_LIBS_USER ${APP_BASE}/rlibs
+# # Special case PATH
+# ENV PATH ${VENV_PATH}/bin:/usr/lib/rstudio-server/bin/:${PATH}
+# # If scripts required during build are present, copy them
+
+# # COPY python/requirements.frozen.txt /tmp/requirements.frozen.txt
+# # RUN mkdir -p ${VENV_PATH} && \
+# # chown -R ${NB_USER}:${NB_USER} ${VENV_PATH}
+
+# USER ${NB_USER}
+# # RUN python3 -m venv ${VENV_PATH}
+
+# # RUN pip install --no-cache-dir -r /tmp/requirements.frozen.txt && \
+# RUN jupyter nbextension enable --py widgetsnbextension --sys-prefix && \
+#     jupyter serverextension enable --py jupyterlab --sys-prefix
+
+# USER root
+# RUN mkdir -p ${R_LIBS_USER} && \
+# chown -R ${NB_USER}:${NB_GROUP} ${R_LIBS_USER}
+
+# RUN curl --silent --location --fail https://download2.rstudio.org/rstudio-server-1.1.419-amd64.deb > /tmp/rstudio.deb && \
+# echo '24cd11f0405d8372b4168fc9956e0386 /tmp/rstudio.deb' | md5sum -c - && \
+# dpkg -i /tmp/rstudio.deb && \
+# rm /tmp/rstudio.deb
+
+# USER ${NB_USER}
+# RUN pip install --no-cache-dir nbrsessionproxy==0.6.1 && \
+# jupyter serverextension enable nbrsessionproxy --sys-prefix && \
+# jupyter nbextension install --py nbrsessionproxy --sys-prefix && \
+# jupyter nbextension enable --py nbrsessionproxy --sys-prefix
+
+# RUN R --quiet -e "install.packages('devtools', repos='https://mran.microsoft.com/snapshot/2018-06-19', method='libcurl')" && \
+# R --quiet -e "devtools::install_github('IRkernel/IRkernel', ref='0.8.11')" && \
+# R --quiet -e "IRkernel::installspec(prefix='$NB_PYTHON_PREFIX')"
+
+
+# USER root
+# COPY install.R ${HOME}
+# RUN echo "options(repos = c(CRAN='https://mran.microsoft.com/snapshot/2018-06-19'), download.file.method = 'libcurl')" > /etc/R/Rprofile.site
+
+# USER ${NB_USER}
+# RUN Rscript install.R
+
+# Extras
+# -----------------------------------------------------------------------------
+
+RUN pip --no-cache-dir install \
+    git+https://github.com/data-8/nbgitpuller \
+    plotly \
+    bash_kernel
+
+RUN python -m bash_kernel.install --sys-prefix
+
+RUN conda install --yes --channel conda-forge \
+    matplotlib \
+    numpy \
+    pandas \
+    sympy
+
+RUN jupyter serverextension enable --sys-prefix --python nbgitpuller
+
+RUN jupyter labextension install @jupyterlab/plotly-extension
+
+# -----------------------------------------------------------------------------
+
+# Cleanup
+RUN conda clean --yes --all && \
+    npm cache clean --force && \
+    rm -rf $CONDA_DIR/share/jupyter/lab/staging && \
+    rm -rf /home/$NB_USER/.cache/yarn
+
+# Startup Scripts
+COPY start pre-startup-bash pre-startup-python /usr/local/bin/
