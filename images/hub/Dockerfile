@@ -9,8 +9,8 @@ RUN pip3 --no-cache-dir install \
 RUN apt-get install --yes --no-install-recommends \
     vim
 
-# RUN pip3 install --upgrade \
-#     https://github.com/consideratio/kubespawner/archive/tolerations-pr.zip
+RUN pip3 install --upgrade \
+    https://github.com/consideratio/kubespawner/archive/3445a8d.zip
 
 COPY jupyterhub_config.py /srv/jupyterhub_config.py
 

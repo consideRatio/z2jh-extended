@@ -97,7 +97,7 @@ jupyterhub:
     # image WRITTEN by ../build.py
     image:
       name: eu.gcr.io/jupyter-se/hub
-      tag: canary-109
+      tag: canary-119
     resources:
       requests:
         cpu: 100m
@@ -174,7 +174,7 @@ jupyterhub:
     # image WRITTEN by ../build.py
     image:
       name: eu.gcr.io/jupyter-se/singleuser
-      tag: canary-109
+      tag: canary-119
     cpu:
       limit: 2
       ### guarantee MODIFIED from
